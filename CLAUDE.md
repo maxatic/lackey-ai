@@ -104,8 +104,8 @@ Connected this session:
 - ⏳ **Stripe**, **Sentry**, **PostHog** — added; authenticate in-browser via `/mcp`
 - ✅ **Cloudflare docs** (`cloudflare-docs`)
 - ⚠️ **GitHub** — added, but its remote MCP needs a **PAT in an `Authorization: Bearer` header**
-  (it doesn't support dynamic client registration, so OAuth fails). The `gh` CLI is already authenticated
-  and covers GitHub ops without the MCP.
+  (it doesn't support dynamic client registration, so OAuth fails). Note: `gh` CLI is **not installed**;
+  GitHub repo/push ops use the cached git credential (macOS keychain) or a classic PAT (`repo` scope).
 
 Pending API keys (local `npx` servers — not yet added):
 
