@@ -11,7 +11,7 @@ try {
   await client.connect();
 
   const tables = await client.query(
-    "select table_name from information_schema.tables where table_schema='public' order by table_name"
+    "select table_name from information_schema.tables where table_schema='public' and table_name != 'schema_migrations' order by table_name"
   );
   const tableNames = tables.rows.map(r => r.table_name);
   console.log('Tables:', tableNames);
@@ -51,6 +51,39 @@ try {
     failed = true;
   } else {
     console.log(`✓ bullets_tags_gin index confirmed`);
+  }
+
+  // RLS check
+  const rls = await client.query(
+    "select count(*) filter (where rowsecurity) as rls_tables from pg_tables where schemaname='public'"
+  );
+  const rlsCount = Number(rls.rows[0].rls_tables);
+  if (rlsCount === 9) {
+    console.log('✓ RLS enabled on all 9 public tables');
+  } else {
+    console.warn(`WARN: RLS enabled on ${rlsCount}/9 public tables (run db:migrate to apply 0002_rls.sql)`);
+  }
+
+  // Storage bucket check
+  const bucket = await client.query(
+    "select id from storage.buckets where id = 'profile-photos'"
+  );
+  if (bucket.rows.length === 1) {
+    console.log("✓ storage bucket 'profile-photos' exists");
+  } else {
+    console.error("FAIL: storage bucket 'profile-photos' not found");
+    failed = true;
+  }
+
+  const storagePolicies = await client.query(
+    "select count(*) as n from pg_policies where schemaname='storage' and tablename='objects' and policyname like 'profile_photos%'"
+  );
+  const spCount = Number(storagePolicies.rows[0].n);
+  if (spCount >= 1) {
+    console.log(`✓ ${spCount} storage.objects polic(ies) reference profile-photos`);
+  } else {
+    console.error('FAIL: no storage.objects policies for profile-photos found');
+    failed = true;
   }
 
   if (failed) process.exit(1);
