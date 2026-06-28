@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const getToken = vi.fn().mockResolvedValue('clerk.jwt.token');
-const createServerClient = vi.fn().mockReturnValue({ __client: true });
+const createServerClient = vi.fn();
 
 vi.mock('@clerk/nextjs/server', () => ({
   auth: vi.fn().mockResolvedValue({ getToken }),
@@ -11,6 +11,7 @@ vi.mock('@supabase/ssr', () => ({ createServerClient }));
 describe('createServerSupabaseClient', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    createServerClient.mockReturnValue({ __client: true });
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://x.supabase.co';
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
   });
