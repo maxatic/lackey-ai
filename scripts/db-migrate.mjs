@@ -23,6 +23,8 @@ try {
       applied_at timestamptz not null default now()
     )
   `);
+  // deny-all to non-owner roles; postgres/owner bypasses RLS so migrations still run
+  await client.query('alter table schema_migrations enable row level security');
 
   // Backfill: if 0001_schema not recorded but users table already exists, record it
   const { rows: recorded } = await client.query(

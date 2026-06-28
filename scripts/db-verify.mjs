@@ -55,7 +55,7 @@ try {
 
   // RLS check
   const rls = await client.query(
-    "select count(*) filter (where rowsecurity) as rls_tables from pg_tables where schemaname='public'"
+    "select count(*) filter (where rowsecurity) as rls_tables from pg_tables where schemaname='public' and tablename != 'schema_migrations'"
   );
   const rlsCount = Number(rls.rows[0].rls_tables);
   if (rlsCount === 9) {
@@ -79,10 +79,10 @@ try {
     "select count(*) as n from pg_policies where schemaname='storage' and tablename='objects' and policyname like 'profile_photos%'"
   );
   const spCount = Number(storagePolicies.rows[0].n);
-  if (spCount >= 1) {
-    console.log(`✓ ${spCount} storage.objects polic(ies) reference profile-photos`);
+  if (spCount >= 4) {
+    console.log(`✓ ${spCount} storage.objects policies reference profile-photos (select/insert/update/delete)`);
   } else {
-    console.error('FAIL: no storage.objects policies for profile-photos found');
+    console.error(`FAIL: expected 4 storage.objects policies for profile-photos, got ${spCount}`);
     failed = true;
   }
 

@@ -4,6 +4,7 @@
 --   users table uses id (PK = Clerk sub), all others use user_id.
 
 -- Grants: make authenticated role the gate, not missing permissions
+-- ponytail: broad grant here is intentional; RLS policies below are the actual security gate
 grant usage on schema public to authenticated, anon;
 grant all on all tables in schema public to authenticated;
 grant all on all sequences in schema public to authenticated;
