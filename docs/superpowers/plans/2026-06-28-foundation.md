@@ -1627,3 +1627,13 @@ export default async function DashboardLayout({
   Otherwise there is no code change to commit — note in the deploy log that Phase 0 is live and record the production URL.
 
 ---
+
+## Implementation Notes (deviations from this plan, recorded at build time)
+
+These were forced by the actual environment and accepted during execution:
+
+- **DB migrations run via a Node `pg` runner, not the Supabase CLI.** `supabase` CLI and `psql` are not installed and the connected Supabase MCP is on a different account, so migrations are applied with `scripts/db-migrate.mjs` over `DATABASE_URL` (`npm run db:migrate`), with `scripts/db-verify.mjs` (`npm run db:verify`). Applied migrations are tracked in a `schema_migrations` table (RLS deny-all). Tasks 4–5's `supabase db push`/`psql` steps are superseded by this.
+- **RLS isolation is tested at the Postgres level**, not with minted JWTs: `scripts/test-rls.mjs` (`npm run test:rls`) uses `SET LOCAL ROLE authenticated` + `request.jwt.claims` to replicate PostgREST, proving cross-user read/write isolation across all 8 data tables + storage. (We lack the project JWT secret, so JWT-minting was infeasible.)
+- **`src/lib/db/database.types.ts` is a hand-authored stub** (currently only the `users` row shape). **Phase 1, first task: regenerate full types** (`supabase gen types`) before writing Skeleton CRUD — the other 8 tables are currently untyped.
+- **`createBrowserSupabaseClient(getToken)` takes a param** (Clerk v6 exposes the client token only via the `useSession()` hook). Phase-1 client components must pass `getToken` from `useSession()`.
+- **Before production deploy:** add a CI secret-scan (gitleaks/trufflehog) and a CI `npm run build` — `.gitignore` uses a broad `.env*` (with `!.env.example`).
