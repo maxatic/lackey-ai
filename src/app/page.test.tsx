@@ -5,6 +5,6 @@ import Page from '@/app/page';
 describe('home page', () => {
   it('renders without crashing', () => {
     render(<Page />);
-    expect(document.body).toBeInTheDocument();
+    expect(document.body.firstChild).not.toBeNull();
   });
 });
