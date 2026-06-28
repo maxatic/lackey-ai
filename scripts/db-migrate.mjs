@@ -13,18 +13,25 @@ const client = new Client({
   ssl: { rejectUnauthorized: false },
 });
 
-await client.connect();
+try {
+  await client.connect();
 
-const files = (await readdir(migrationsDir))
-  .filter(f => f.endsWith('.sql'))
-  .sort();
+  const files = (await readdir(migrationsDir))
+    .filter(f => f.endsWith('.sql'))
+    .sort();
 
-for (const file of files) {
-  const sql = await readFile(join(migrationsDir, file), 'utf8');
-  console.log(`Applying ${file}...`);
-  await client.query(sql);
-  console.log(`  ✓ ${file} applied`);
+  for (const file of files) {
+    const sql = await readFile(join(migrationsDir, file), 'utf8');
+    console.log(`Applying ${file}...`);
+    // ponytail: no IF NOT EXISTS by design — re-running on a non-empty DB will fail (expected).
+    await client.query(sql);
+    console.log(`  ✓ ${file} applied`);
+  }
+
+  console.log('Migration complete.');
+} catch (err) {
+  console.error('Migration failed:', err.message);
+  process.exitCode = 1;
+} finally {
+  await client.end();
 }
-
-await client.end();
-console.log('Migration complete.');
