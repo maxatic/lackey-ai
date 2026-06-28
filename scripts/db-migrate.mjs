@@ -1,0 +1,30 @@
+// ponytail: simple sequential SQL runner, no frameworks
+import { readdir, readFile } from 'fs/promises';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import pg from 'pg';
+
+const { Client } = pg;
+
+const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'supabase', 'migrations');
+
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
+
+await client.connect();
+
+const files = (await readdir(migrationsDir))
+  .filter(f => f.endsWith('.sql'))
+  .sort();
+
+for (const file of files) {
+  const sql = await readFile(join(migrationsDir, file), 'utf8');
+  console.log(`Applying ${file}...`);
+  await client.query(sql);
+  console.log(`  ✓ ${file} applied`);
+}
+
+await client.end();
+console.log('Migration complete.');
