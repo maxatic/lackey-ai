@@ -7,6 +7,7 @@ import {
   SignedOut,
   UserButton,
 } from '@clerk/nextjs';
+import { PostHogProvider } from '@/components/posthog-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -23,16 +24,18 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ClerkProvider>
-          <header className="flex justify-end items-center gap-4 p-4 h-16">
-            <SignedOut>
-              <SignInButton />
-              <SignUpButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </header>
-          {children}
+          <PostHogProvider>
+            <header className="flex justify-end items-center gap-4 p-4 h-16">
+              <SignedOut>
+                <SignInButton />
+                <SignUpButton />
+              </SignedOut>
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+            </header>
+            {children}
+          </PostHogProvider>
         </ClerkProvider>
       </body>
     </html>
