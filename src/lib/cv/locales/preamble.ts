@@ -32,7 +32,8 @@ export function header(p: CvData['profile'], titleFallback: string | null): stri
   ].filter((l) => l !== '').join('\n') + '\n';
 }
 
-export function fmtRange(start: string | null, end: string | null, isCurrent: boolean, sep: 'mon' | 'mm'): string {
+// `current` is the locale's word for an ongoing role (UK 'Present', DE 'heute').
+export function fmtRange(start: string | null, end: string | null, isCurrent: boolean, sep: 'mon' | 'mm', current = 'Present'): string {
   const fmt = (iso: string | null) => {
     if (!iso) return '';
     const [y, m] = iso.split('-');
@@ -41,7 +42,7 @@ export function fmtRange(start: string | null, end: string | null, isCurrent: bo
     return `${mon} ${y}`;
   };
   const left = fmt(start);
-  const right = isCurrent ? 'Present' : fmt(end);
+  const right = isCurrent ? current : fmt(end);
   return [left, right].filter(Boolean).join(' – ');
 }
 

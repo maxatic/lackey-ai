@@ -3,12 +3,22 @@ import { spawn } from 'node:child_process';
 import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { timingSafeEqual } from 'node:crypto';
 
 const SECRET = process.env.COMPILE_SERVICE_SECRET;
 const MAX_BYTES = 256 * 1024;
 const TIMEOUT_MS = 25_000;
 
 if (!SECRET) { console.error('COMPILE_SERVICE_SECRET required'); process.exit(1); }
+
+// Constant-time Bearer check — a plain !== leaks the secret via response timing.
+function authOk(header) {
+  const prefix = 'Bearer ';
+  if (typeof header !== 'string' || !header.startsWith(prefix)) return false;
+  const token = Buffer.from(header.slice(prefix.length));
+  const secret = Buffer.from(SECRET);
+  return token.length === secret.length && timingSafeEqual(token, secret);
+}
 
 function readBody(req, limit) {
   return new Promise((resolve, reject) => {
@@ -32,7 +42,10 @@ function compile(texPath, cwd) {
     p.stderr.on('data', (d) => { err += d; });
     p.on('close', (code) => {
       clearTimeout(timer);
-      code === 0 ? resolve() : reject(new Error('tectonic failed: ' + err.slice(0, 500)));
+      if (code === 0) { resolve(); return; }
+      // Log full stderr server-side; never return it (it carries /tmp paths).
+      console.error('tectonic failed:', err.slice(0, 2000));
+      reject(new Error('compile failed'));
     });
   });
 }
@@ -40,7 +53,7 @@ function compile(texPath, cwd) {
 const server = createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/health') { res.writeHead(200).end('ok'); return; }
   if (req.method !== 'POST' || req.url !== '/compile') { res.writeHead(404).end(); return; }
-  if (req.headers.authorization !== `Bearer ${SECRET}`) { res.writeHead(401).end('unauthorized'); return; }
+  if (!authOk(req.headers.authorization)) { res.writeHead(401).end('unauthorized'); return; }
 
   let dir;
   try {

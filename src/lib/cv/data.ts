@@ -45,7 +45,15 @@ export async function getCvData(trackId: string, locale: CvLocale): Promise<CvDa
       email: profile?.email ?? null,
       phone: profile?.phone ?? null,
       location: profile?.location ?? null,
-      links: Array.isArray(profile?.links) ? (profile!.links as { label: string; url: string }[]) : [],
+      // links is a Json column — validate element shape so a malformed row can't throw at render time.
+      links: Array.isArray(profile?.links)
+        ? (profile!.links as unknown[]).filter(
+            (l): l is { label: string; url: string } =>
+              !!l &&
+              typeof (l as { label?: unknown }).label === 'string' &&
+              typeof (l as { url?: unknown }).url === 'string',
+          )
+        : [],
       date_of_birth: profile?.date_of_birth ?? null,
       nationality: profile?.nationality ?? null,
       marital_status: profile?.marital_status ?? null,
