@@ -33,7 +33,9 @@ async function setLink(
     [fkCol]: id,
     sort_order,
   }));
-  const { error: insErr } = await supabase.from(table).insert(rows);
+  // ponytail: cast needed — computed key `[fkCol]` loses type narrowing; logic is correct
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error: insErr } = await supabase.from(table).insert(rows as any);
   if (insErr) throw insErr;
 }
 
@@ -49,6 +51,7 @@ async function getLinkIds(
     .eq('track_id', trackId)
     .order('sort_order');
   if (error) throw error;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((r: any) => r[fkCol] as string);
 }
 

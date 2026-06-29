@@ -2,8 +2,10 @@ import { auth } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ensureUser } from '@/lib/auth/ensure-user';
 import type { Database } from '@/lib/db/database.types';
+import type { EntryKind } from './entry-kinds';
 
-export type EntryKind = Database['public']['Enums']['entry_kind'];
+export type { EntryKind } from './entry-kinds';
+export { KIND_LABELS, DETAIL_FIELDS, ENTRY_KINDS } from './entry-kinds';
 
 export type Entry = Database['public']['Tables']['entries']['Row'];
 
@@ -54,40 +56,3 @@ export async function deleteEntry(id: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
-// ---- UI metadata: which details keys each kind exposes. Source of truth: spec §4.3. ----
-export const KIND_LABELS: Record<EntryKind, string> = {
-  experience: 'Experience',
-  education: 'Education',
-  project: 'Project',
-  certification: 'Certification',
-  award: 'Award',
-  publication: 'Publication',
-  volunteering: 'Volunteering',
-};
-
-export const DETAIL_FIELDS: Record<EntryKind, { key: string; label: string }[]> = {
-  experience: [{ key: 'employment_type', label: 'Employment type' }],
-  education: [
-    { key: 'degree', label: 'Degree' },
-    { key: 'field_of_study', label: 'Field of study' },
-    { key: 'grade', label: 'Grade' },
-  ],
-  project: [
-    { key: 'url', label: 'URL' },
-    { key: 'role', label: 'Role' },
-  ],
-  certification: [
-    { key: 'credential_id', label: 'Credential ID' },
-    { key: 'url', label: 'URL' },
-    { key: 'issued', label: 'Issued' },
-    { key: 'expires', label: 'Expires' },
-  ],
-  publication: [
-    { key: 'url', label: 'URL' },
-    { key: 'venue', label: 'Venue' },
-  ],
-  award: [{ key: 'issuer', label: 'Issuer' }],
-  volunteering: [{ key: 'cause', label: 'Cause' }],
-};
-
-export const ENTRY_KINDS = Object.keys(KIND_LABELS) as EntryKind[];

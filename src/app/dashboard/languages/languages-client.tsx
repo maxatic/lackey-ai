@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { CEFR_LEVELS, type Language } from '@/lib/db/languages';
+import { CEFR_LEVELS } from '@/lib/db/cefr';
+import type { Language } from '@/lib/db/languages';
 import { addLanguageAction, updateLanguageAction, deleteLanguageAction } from './actions';
 
 function LevelSelect({ defaultValue }: { defaultValue?: string }) {

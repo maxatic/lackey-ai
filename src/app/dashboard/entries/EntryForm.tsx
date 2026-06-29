@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  DETAIL_FIELDS, KIND_LABELS, ENTRY_KINDS,
-  type Entry, type EntryKind,
-} from '@/lib/db/entries';
+import { DETAIL_FIELDS, KIND_LABELS, ENTRY_KINDS, type EntryKind } from '@/lib/db/entry-kinds';
+import type { Entry } from '@/lib/db/entries';
 
 type Props = {
   entry?: Entry;

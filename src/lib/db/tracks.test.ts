@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/lib/db/tracks.test.ts
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
