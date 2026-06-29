@@ -17,7 +17,7 @@ export async function listTracks(): Promise<Track[]> {
     .from('career_tracks')
     .select('*')
     .order('sort_order', { ascending: true });
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data ?? [];
 }
 
@@ -31,7 +31,7 @@ export async function createTrack(input: TrackInput): Promise<Track> {
     .insert({ ...input, user_id: userId })
     .select('*')
     .single();
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data;
 }
 
@@ -43,12 +43,12 @@ export async function updateTrack(id: string, patch: Partial<TrackInput>): Promi
     .eq('id', id)
     .select('*')
     .single();
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data;
 }
 
 export async function deleteTrack(id: string): Promise<void> {
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.from('career_tracks').delete().eq('id', id);
-  if (error) throw new Error(error.message);
+  if (error) throw error;
 }

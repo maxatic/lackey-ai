@@ -17,7 +17,7 @@ export async function listLanguages(): Promise<Language[]> {
     .from('languages')
     .select('*')
     .order('name', { ascending: true });
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data ?? [];
 }
 
@@ -31,7 +31,7 @@ export async function createLanguage(input: LanguageInput): Promise<Language> {
     .insert({ ...input, user_id: userId })
     .select('*')
     .single();
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data;
 }
 
@@ -43,12 +43,12 @@ export async function updateLanguage(id: string, patch: Partial<LanguageInput>):
     .eq('id', id)
     .select('*')
     .single();
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data;
 }
 
 export async function deleteLanguage(id: string): Promise<void> {
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.from('languages').delete().eq('id', id);
-  if (error) throw new Error(error.message);
+  if (error) throw error;
 }

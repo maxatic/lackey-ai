@@ -20,7 +20,7 @@ export async function listEntries(kind?: EntryKind): Promise<Entry[]> {
   let query = supabase.from('entries').select('*');
   if (kind) query = query.eq('kind', kind);
   const { data, error } = await query.order('sort_order', { ascending: true });
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data ?? [];
 }
 
@@ -34,7 +34,7 @@ export async function createEntry(input: EntryInput): Promise<Entry> {
     .insert({ ...input, user_id: userId })
     .select('*')
     .single();
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data;
 }
 
@@ -46,13 +46,13 @@ export async function updateEntry(id: string, patch: Partial<EntryInput>): Promi
     .eq('id', id)
     .select('*')
     .single();
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return data;
 }
 
 export async function deleteEntry(id: string): Promise<void> {
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.from('entries').delete().eq('id', id);
-  if (error) throw new Error(error.message);
+  if (error) throw error;
 }
 
