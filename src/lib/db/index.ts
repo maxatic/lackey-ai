@@ -11,5 +11,5 @@ export * from './entries'; // Task 3
 export * from './bullets'; // Task 4
 export * from './skills';    // Task 5
 export * from './languages'; // Task 5
-//   export * from './tracks'     // Task 6
+export * from './tracks';    // Task 6
 //   export * from './curation'   // Task 7
