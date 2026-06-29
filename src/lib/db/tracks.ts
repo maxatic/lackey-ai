@@ -52,3 +52,10 @@ export async function deleteTrack(id: string): Promise<void> {
   const { error } = await supabase.from('career_tracks').delete().eq('id', id);
   if (error) throw error;
 }
+
+export async function getTrack(id: string): Promise<Track | null> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase.from('career_tracks').select('*').eq('id', id).maybeSingle();
+  if (error) throw error;
+  return data ?? null;
+}
