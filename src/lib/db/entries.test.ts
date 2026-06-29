@@ -2,42 +2,40 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const USER_ID = 'u1';
 
-// Chainable mock that records calls and resolves to a fixed result.
+// Shared result object mutated per-test.
 const result = { data: [] as unknown, error: null as null | { message: string } };
 const calls: Array<[string, unknown[]]> = [];
 
-// Separate terminal object that resolves to result when awaited.
-// We keep this separate from the chain so the chain itself is NOT a thenable
-// (otherwise `await createServerSupabaseClient()` would unwrap through it).
-const terminal = {
+// chain is thenable so `await supabase.from(...).delete().eq(...)` resolves to result.
+// client is NOT thenable so `await createServerSupabaseClient()` returns the client object,
+// not the chain (which would happen if client itself had .then).
+const chain: Record<string, unknown> = {
   then(resolve: (v: typeof result) => unknown) {
     return resolve(result);
   },
 };
-
-function makeChain() {
-  const chain: Record<string, unknown> = {};
-  for (const m of ['from', 'select', 'insert', 'update', 'delete', 'eq']) {
-    chain[m] = (...args: unknown[]) => {
-      calls.push([m, args]);
-      return chain;
-    };
-  }
-  // order() is the non-single terminal: returns something awaitable
-  chain['order'] = (...args: unknown[]) => {
-    calls.push(['order', args]);
-    return terminal;
+for (const m of ['from', 'select', 'insert', 'update', 'delete', 'eq', 'order']) {
+  chain[m] = (...args: unknown[]) => {
+    calls.push([m, args]);
+    return chain;
   };
-  // single() resolves directly
-  chain['single'] = (...args: unknown[]) => {
-    calls.push(['single', args]);
-    return Promise.resolve(result);
-  };
-  return chain;
 }
+// single() resolves directly (same semantics as before)
+chain['single'] = (...args: unknown[]) => {
+  calls.push(['single', args]);
+  return Promise.resolve(result);
+};
+
+// Plain client — no .then, so await won't unwrap it into chain.
+const client = {
+  from: (...args: unknown[]) => {
+    calls.push(['from', args]);
+    return chain;
+  },
+};
 
 vi.mock('@/lib/supabase/server', () => ({
-  createServerSupabaseClient: vi.fn(async () => makeChain()),
+  createServerSupabaseClient: vi.fn(async () => client),
 }));
 vi.mock('@/lib/auth/ensure-user', () => ({ ensureUser: vi.fn(async () => {}) }));
 vi.mock('@clerk/nextjs/server', () => ({
@@ -66,6 +64,12 @@ describe('listEntries', () => {
   it('filters by kind when provided', async () => {
     await listEntries('education');
     expect(calls).toContainEqual(['eq', ['kind', 'education']]);
+    expect(calls).toContainEqual(['order', ['sort_order', { ascending: true }]]);
+  });
+
+  it('throws when supabase returns an error', async () => {
+    result.error = { message: 'list-fail' };
+    await expect(listEntries()).rejects.toThrow('list-fail');
   });
 });
 
@@ -86,7 +90,7 @@ describe('createEntry', () => {
       kind: 'education', title: 'BSc',
       details: { degree: 'BSc', field_of_study: 'CS', grade: '1.0' },
     });
-    expect((row as { details: { degree: string } }).details.degree).toBe('BSc');
+    expect((row as unknown as { details: { degree: string } }).details.degree).toBe('BSc');
   });
 
   it('throws when supabase returns an error', async () => {
@@ -105,6 +109,11 @@ describe('updateEntry', () => {
     expect(updateCall?.[1][0]).toMatchObject({ title: 'Renamed', details: { url: 'https://x' } });
     expect((row as { id: string }).id).toBe('e3');
   });
+
+  it('throws when supabase returns an error', async () => {
+    result.error = { message: 'update-fail' };
+    await expect(updateEntry('e3', { title: 'x' })).rejects.toThrow('update-fail');
+  });
 });
 
 describe('deleteEntry', () => {
@@ -112,5 +121,10 @@ describe('deleteEntry', () => {
     await deleteEntry('e4');
     expect(calls).toContainEqual(['delete', []]);
     expect(calls).toContainEqual(['eq', ['id', 'e4']]);
+  });
+
+  it('throws when supabase returns an error', async () => {
+    result.error = { message: 'delete-fail' };
+    await expect(deleteEntry('e4')).rejects.toThrow('delete-fail');
   });
 });
