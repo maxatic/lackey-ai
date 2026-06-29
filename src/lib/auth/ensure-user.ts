@@ -1,4 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
+import * as Sentry from '@sentry/nextjs';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 /**
@@ -11,10 +12,15 @@ export async function ensureUser(): Promise<void> {
   const { userId } = await auth();
   if (!userId) return;
 
-  const supabase = await createServerSupabaseClient();
-  const { error } = await supabase
-    .from('users')
-    .upsert({ id: userId }, { onConflict: 'id', ignoreDuplicates: true });
-
-  if (error) throw error;
+  // ponytail: report-and-swallow. A failed upsert (transient DB / RLS) must never
+  // blank the dashboard; the row reconciles on the next authenticated request.
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { error } = await supabase
+      .from('users')
+      .upsert({ id: userId }, { onConflict: 'id', ignoreDuplicates: true });
+    if (error) throw error;
+  } catch (err) {
+    Sentry.captureException(err);
+  }
 }
