@@ -1,0 +1,116 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+const USER_ID = 'u1';
+
+// Chainable mock that records calls and resolves to a fixed result.
+const result = { data: [] as unknown, error: null as null | { message: string } };
+const calls: Array<[string, unknown[]]> = [];
+
+// Separate terminal object that resolves to result when awaited.
+// We keep this separate from the chain so the chain itself is NOT a thenable
+// (otherwise `await createServerSupabaseClient()` would unwrap through it).
+const terminal = {
+  then(resolve: (v: typeof result) => unknown) {
+    return resolve(result);
+  },
+};
+
+function makeChain() {
+  const chain: Record<string, unknown> = {};
+  for (const m of ['from', 'select', 'insert', 'update', 'delete', 'eq']) {
+    chain[m] = (...args: unknown[]) => {
+      calls.push([m, args]);
+      return chain;
+    };
+  }
+  // order() is the non-single terminal: returns something awaitable
+  chain['order'] = (...args: unknown[]) => {
+    calls.push(['order', args]);
+    return terminal;
+  };
+  // single() resolves directly
+  chain['single'] = (...args: unknown[]) => {
+    calls.push(['single', args]);
+    return Promise.resolve(result);
+  };
+  return chain;
+}
+
+vi.mock('@/lib/supabase/server', () => ({
+  createServerSupabaseClient: vi.fn(async () => makeChain()),
+}));
+vi.mock('@/lib/auth/ensure-user', () => ({ ensureUser: vi.fn(async () => {}) }));
+vi.mock('@clerk/nextjs/server', () => ({
+  auth: vi.fn(async () => ({ userId: USER_ID })),
+}));
+
+import { listEntries, createEntry, updateEntry, deleteEntry } from './entries';
+
+beforeEach(() => {
+  calls.length = 0;
+  result.data = [];
+  result.error = null;
+});
+
+describe('listEntries', () => {
+  it('selects all entries ordered by sort_order, no kind filter', async () => {
+    result.data = [{ id: 'e1', kind: 'experience', title: 'Dev', details: {} }];
+    const rows = await listEntries();
+    expect(calls).toContainEqual(['from', ['entries']]);
+    expect(calls).toContainEqual(['select', ['*']]);
+    expect(calls).toContainEqual(['order', ['sort_order', { ascending: true }]]);
+    expect(calls.some(([m]) => m === 'eq')).toBe(false);
+    expect(rows).toHaveLength(1);
+  });
+
+  it('filters by kind when provided', async () => {
+    await listEntries('education');
+    expect(calls).toContainEqual(['eq', ['kind', 'education']]);
+  });
+});
+
+describe('createEntry', () => {
+  it('injects user_id, inserts and returns the single row, persisting details jsonb', async () => {
+    result.data = {
+      id: 'e2', kind: 'education', title: 'BSc',
+      details: { degree: 'BSc', field_of_study: 'CS', grade: '1.0' },
+    } as never;
+    const row = await createEntry({
+      kind: 'education', title: 'BSc',
+      details: { degree: 'BSc', field_of_study: 'CS', grade: '1.0' },
+    });
+    expect(calls[0]).toEqual(['from', ['entries']]);
+    const insertCall = calls.find(([m]) => m === 'insert');
+    expect(insertCall?.[1][0]).toMatchObject({
+      user_id: USER_ID,
+      kind: 'education', title: 'BSc',
+      details: { degree: 'BSc', field_of_study: 'CS', grade: '1.0' },
+    });
+    expect((row as { details: { degree: string } }).details.degree).toBe('BSc');
+  });
+
+  it('throws when supabase returns an error', async () => {
+    result.error = { message: 'boom' };
+    await expect(createEntry({ kind: 'project', title: 'x', details: {} }))
+      .rejects.toThrow('boom');
+  });
+});
+
+describe('updateEntry', () => {
+  it('updates by id and returns the patched row', async () => {
+    result.data = { id: 'e3', kind: 'project', title: 'Renamed', details: { url: 'https://x' } } as never;
+    const row = await updateEntry('e3', { title: 'Renamed', details: { url: 'https://x' } });
+    expect(calls).toContainEqual(['eq', ['id', 'e3']]);
+    const updateCall = calls.find(([m]) => m === 'update');
+    expect(updateCall?.[1][0]).toMatchObject({ title: 'Renamed', details: { url: 'https://x' } });
+    expect((row as { id: string }).id).toBe('e3');
+  });
+});
+
+describe('deleteEntry', () => {
+  it('deletes by id', async () => {
+    await deleteEntry('e4');
+    expect(calls).toContainEqual(['delete', []]);
+    expect(calls).toContainEqual(['eq', ['id', 'e4']]);
+  });
+});

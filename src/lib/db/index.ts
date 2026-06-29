@@ -7,7 +7,7 @@ export type { Database } from './database.types';
 // line when its module is created (a re-export of a missing module breaks the
 // build, so they are commented until then):
 export * from './profile'; // Task 2
-//   export * from './entries'    // Task 3
+export * from './entries'; // Task 3
 //   export * from './bullets'    // Task 4
 //   export * from './skills'     // Task 5
 //   export * from './languages'  // Task 5
