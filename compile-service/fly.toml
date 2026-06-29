@@ -1,0 +1,26 @@
+# fly.toml — cv-compile-service
+# Deploy with: fly launch (first time) or fly deploy (updates)
+# Set secret: fly secrets set COMPILE_SERVICE_SECRET=<random>
+
+app = "cv-compile-service"
+primary_region = "ams"  # Amsterdam — close to EU users
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  min_machines_running = 0  # scale-to-zero; cold start ~2-3s after warm-compile cache
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/health"
+    timeout = "5s"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
