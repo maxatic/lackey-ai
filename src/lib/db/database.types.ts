@@ -237,6 +237,12 @@ export type Database = {
         Update: { id?: string; user_id?: string; track_id?: string; skill_id?: string; sort_order?: number };
         Relationships: [];
       };
+      cv_documents: {
+        Row: { id: string; user_id: string; track_id: string; locale: string; storage_path: string; created_at: string; updated_at: string };
+        Insert: { id?: string; user_id: string; track_id: string; locale: string; storage_path: string; created_at?: string; updated_at?: string };
+        Update: { id?: string; user_id?: string; track_id?: string; locale?: string; storage_path?: string; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
