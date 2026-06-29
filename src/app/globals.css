@@ -24,3 +24,140 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Marketing landing page (/)  — scoped to [data-marketing] so nothing here
+   leaks into the dashboard or auth routes. Warm & human, light theme locked.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* The root layout renders a global scaffold <header> with raw Clerk buttons.
+   Hide it only on marketing pages (the marketing chrome supplies its own nav).
+   Dashboard/auth pages have no [data-marketing], so their header is untouched.
+   ponytail: CSS-scoped hide instead of editing the shared root layout. */
+body:has([data-marketing]) header {
+  display: none !important;
+}
+
+[data-marketing] {
+  /* Palette — one warm family, ONE accent (terracotta). Locked across the page. */
+  --paper: #fbf6ee;       /* base warm cream            */
+  --paper-2: #f4ead9;     /* deeper sand (alt sections) */
+  --ink: #251b15;         /* warm near-black text       */
+  --ink-soft: #6b5b4e;    /* muted warm body text       */
+  --line: #e7d9c5;        /* hairline / borders         */
+  --accent: #c8492b;      /* terracotta — the only accent */
+  --accent-ink: #a23a20;  /* darker accent for hover    */
+  --accent-tint: #f3ddd1; /* accent wash background     */
+  --espresso: #2a201a;    /* the single dark moment     */
+
+  color-scheme: light;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Lock the warm light theme even if the OS prefers dark (deliberate brand choice). */
+@media (prefers-color-scheme: dark) {
+  [data-marketing] {
+    background: var(--paper);
+    color: var(--ink);
+  }
+}
+
+[data-marketing] .font-display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+[data-marketing] ::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+html:has([data-marketing]) {
+  scroll-behavior: smooth;
+}
+
+/* Scroll-reveal — pure CSS, no JS. Where `animation-timeline` is supported the
+   element eases in as it enters the viewport; where it isn't (and during SSR),
+   the 0s default-timeline fallback resolves straight to the visible end state,
+   so content is never stuck hidden. ponytail: native scroll-driven animation
+   beats a JS IntersectionObserver wrapper here. */
+@keyframes lk-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+[data-marketing] .reveal {
+  animation: lk-reveal both;
+  animation-timeline: view();
+  animation-range: entry 0% cover 32%;
+}
+
+/* Hero load-in (time-based, runs once). */
+@keyframes lk-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+[data-marketing] .lk-rise {
+  opacity: 0;
+  animation: lk-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes lk-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+[data-marketing] .lk-float {
+  animation: lk-float 7s ease-in-out infinite;
+}
+
+/* Motion is restrained but alive (MOTION 5). Everything collapses to static here. */
+@media (prefers-reduced-motion: reduce) {
+  html:has([data-marketing]) {
+    scroll-behavior: auto;
+  }
+  [data-marketing] .reveal,
+  [data-marketing] .lk-rise {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    animation: none;
+  }
+  [data-marketing] .lk-float {
+    animation: none;
+  }
+}
+
+/* Lenis smooth scroll — only active on the marketing page (where the provider
+   mounts and adds the .lenis class to <html>); inert everywhere else. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
