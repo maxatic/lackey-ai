@@ -79,4 +79,16 @@ describe('languages db helpers', () => {
     fromMock.mockReturnValue(b);
     await expect(listLanguages()).rejects.toThrow('nope');
   });
+
+  it('updateLanguage throws when Supabase returns an error', async () => {
+    const b = makeBuilder({ data: null, error: { message: 'boom' } });
+    fromMock.mockReturnValue(b);
+    await expect(updateLanguage('l1', { cefr_level: 'C1' })).rejects.toThrow('boom');
+  });
+
+  it('deleteLanguage throws when Supabase returns an error', async () => {
+    const b = makeBuilder({ data: null, error: { message: 'boom' } });
+    fromMock.mockReturnValue(b);
+    await expect(deleteLanguage('l1')).rejects.toThrow('boom');
+  });
 });

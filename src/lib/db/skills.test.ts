@@ -73,4 +73,16 @@ describe('skills db helpers', () => {
     fromMock.mockReturnValue(b);
     await expect(listSkills()).rejects.toThrow('boom');
   });
+
+  it('updateSkill throws when Supabase returns an error', async () => {
+    const b = makeBuilder({ data: null, error: { message: 'boom' } });
+    fromMock.mockReturnValue(b);
+    await expect(updateSkill('s1', { name: 'x' })).rejects.toThrow('boom');
+  });
+
+  it('deleteSkill throws when Supabase returns an error', async () => {
+    const b = makeBuilder({ data: null, error: { message: 'boom' } });
+    fromMock.mockReturnValue(b);
+    await expect(deleteSkill('s1')).rejects.toThrow('boom');
+  });
 });
