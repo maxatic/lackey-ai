@@ -15,7 +15,11 @@ export function TrackForm({ track, action, submitLabel }: Props) {
     <form
       action={async (fd) => {
         setPending(true);
-        await action(fd);
+        try {
+          await action(fd);
+        } finally {
+          setPending(false);
+        }
       }}
       className="flex max-w-xl flex-col gap-4"
     >

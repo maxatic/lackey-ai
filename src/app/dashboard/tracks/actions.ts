@@ -10,7 +10,11 @@ function parse(formData: FormData): TrackInput {
     return v ? v : null;
   };
   return {
-    name: (formData.get('name') as string).trim(),
+    name: (() => {
+      const v = str('name');
+      if (!v) throw new Error('Track name is required');
+      return v;
+    })(),
     target_title: str('target_title'),
     summary: str('summary'),
     default_locale: str('default_locale'),
