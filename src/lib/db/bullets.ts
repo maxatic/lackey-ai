@@ -70,12 +70,15 @@ export async function reorderBullets(
   const supabase = await createServerSupabaseClient();
   const rows = orderedIds.map((id, index) => ({
     id,
-    entry_id: entryId,
     sort_order: index,
   }));
-  // ponytail: single upsert on PK `id` — one round-trip vs N updates; entry_id satisfies NOT NULL
+  // ponytail: single upsert on PK `id` — one round-trip vs N updates.
+  // entry_id is intentionally omitted: reorder must never reassign entry_id — omitting it means
+  // the ON CONFLICT UPDATE touches only sort_order. Including it would let a caller silently move
+  // a bullet to a different entry via a crafted payload (same-user data corruption).
+  // Cast to Insert[]: partial rows are safe for upsert — DB merges with existing values
   const { error } = await supabase
     .from('bullets')
-    .upsert(rows, { onConflict: 'id' });
+    .upsert(rows as Database['public']['Tables']['bullets']['Insert'][], { onConflict: 'id' });
   if (error) throw error;
 }

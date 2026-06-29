@@ -14,6 +14,7 @@ const state: {
 } = { rows: [], lastFilters: {} };
 
 function makeBuilder() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const builder: any = {
     _select: false,
     insert(vals: Row) {
@@ -126,6 +127,7 @@ describe('bullets db helpers', () => {
     const result = { data: null, error: { message: 'delete failed' } };
     // Override builder for this test so then() resolves to an error result
     fromSpy.mockImplementationOnce(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const b: any = {
         delete() { return b; },
         eq(col: string, val: unknown) {
@@ -141,12 +143,15 @@ describe('bullets db helpers', () => {
     await expect(deleteBullet('b1')).rejects.toThrow('delete failed');
   });
 
-  it('reorderBullets upserts each id with its index as sort_order', async () => {
+  it('reorderBullets upserts each id with its index as sort_order, WITHOUT entry_id', async () => {
+    // Guards against cross-entry reassignment vector: entry_id must never appear in the upsert
+    // payload, otherwise a crafted reorderBulletsAction(otherEntryId, [thisBulletId]) call would
+    // silently move a bullet to a different entry (same-user data corruption).
     await reorderBullets('e1', ['b3', 'b1', 'b2']);
     expect(state.lastUpserts).toEqual([
-      { id: 'b3', entry_id: 'e1', sort_order: 0 },
-      { id: 'b1', entry_id: 'e1', sort_order: 1 },
-      { id: 'b2', entry_id: 'e1', sort_order: 2 },
+      { id: 'b3', sort_order: 0 },
+      { id: 'b1', sort_order: 1 },
+      { id: 'b2', sort_order: 2 },
     ]);
   });
 
