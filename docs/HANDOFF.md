@@ -1,7 +1,7 @@
 # Lackey AI — Handoff
 
-**As of:** 2026-06-29
-**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` @ `b4aec5d`
+**As of:** 2026-06-29 (Phase 1 + landing complete)
+**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` @ `afa09b6` — **local, NOT yet pushed** (origin still at `b79b0cc`; pushing auto-deploys to Vercel prod)
 **Live:** https://lackey-ai-main.vercel.app (Vercel, auto-deploys on push to `main`)
 
 Lackey AI — an AI companion for the EU job-seeking journey (structured profile → locale-correct tailored CVs & cover letters, job tracking, interview prep). See [CLAUDE.md](../CLAUDE.md) for vision, stack, and the full phased roadmap.
@@ -27,15 +27,18 @@ Built via subagent-driven development (one implementer + reviewer + fix loop per
 
 ---
 
+## ✅ Done — Phase 1 (Skeleton) + Landing page (this session)
+
+Built via subagent-driven development (ruflo `coder`/`reviewer`, fresh agent per task, per-task spec+quality review + fix loop, two parallel opus final reviews). All committed locally on `main` (`31e013a`..`afa09b6`); **not yet pushed**. `npx vitest run` = 66/66 (14 files); `npx tsc --noEmit` = 0; `npx next build` = 14 routes, clean.
+
+- **Tasks 1–7:** db barrel + dashboard nav; personal-profile CRUD (+ photo upload, locale-field flag hints); unified entries CRUD (per-kind, `details` jsonb) + entry detail; bullets CRUD (tags chip-input + reorder); skills + languages CRUD; career-tracks CRUD; track curation (`track_entries`/`track_skills` set-replace). All db helpers under `src/lib/db/*`, routes under `src/app/dashboard/*`. Full DB types regenerated for all 9 tables.
+- **Notable fixes during the build:** `reorderBullets` no longer reassigns `entry_id` (same-user cross-entry data-corruption vector closed); RSC client/server boundary fixed by extracting client-safe UI metadata into `entry-kinds.ts`/`cefr.ts`; track route slug unified to `[id]`; db helpers standardized to throw the raw `PostgrestError` (preserves `.code` for Sentry).
+- **Landing page** folded in (was a parallel agent's work, now owned): `(marketing)` route group as home `/` — hero/features/cv-formats/how-it-works/skeleton/companion/pricing/FAQ/footer/nav + GSAP/lenis fx. Reviewed (SSR-safe, reduced-motion, a11y) and fixed (picsum→local placeholder, double-`h1`, offscreen ticker gated, `invalidateOnRefresh`, scoped header-hide via `[data-app-header]`).
+- **SDD ledger** (full per-task trail + adjudications): `.superpowers/sdd/progress.md`.
+
 ## 🔴 Known problems
 
-1. **`/dashboard` throws "Something went wrong" for signed-in users (TOP PRIORITY).**
-   The route hits `global-error.tsx`. The dashboard layout runs `ensureUser()` (Supabase upsert) and the page runs a server-side PostHog `capture()`+`flush()`; either throwing crashes the route.
-   - **Prime suspect (maybe already fixed):** server PostHog initialized with an empty key; fixed in `c3c9d9b` (falls back to `NEXT_PUBLIC_POSTHOG_KEY`). **Re-test first** — the latest deploy includes the fix.
-   - **If still broken:** `ensureUser()` re-throws when the Supabase upsert fails (likely the Clerk token not attached → RLS rejects the INSERT). The integration test only exercised SELECT, not INSERT.
-   - **Debug:** check **Sentry** (exception is captured), or Vercel runtime logs, or reproduce with `npm run dev` + sign in.
-   - **Harden regardless:** wrap the page's PostHog capture and `ensureUser()` body in try/catch (report to Sentry, don't throw) so telemetry/upsert failures never blank the dashboard.
-   - Files: `src/app/dashboard/layout.tsx`, `src/app/dashboard/page.tsx`, `src/lib/auth/ensure-user.ts`, `src/lib/supabase/server.ts`. (Also saved as a persistent memory note for next session.)
+1. ~~**`/dashboard` throws "Something went wrong" for signed-in users.**~~ **RESOLVED (`b79b0cc`).** The PostHog server key now falls back to `NEXT_PUBLIC_POSTHOG_KEY` (`c3c9d9b`), and both the page's PostHog `capture()`/`flush()` and `ensureUser()`'s upsert are wrapped in report-to-Sentry try/catch, so telemetry/upsert failures never blank the dashboard. Pushed to origin. (Browser re-test on a real signed-in session still worthwhile, but the route is now resilient by construction.)
 
 2. **`/dashboard` 404s via `curl` (not a code bug).**
    Clerk **development** keys (`pk_test_`) on a `vercel.app` domain require a "dev-browser" handshake that only a real browser can do; `curl` gets a 404 rewrite (`x-clerk-auth-reason: dev-browser-missing`). Reliable fix is a Clerk **production instance** (`pk_live`) on a **custom domain** — deferred until a domain exists.
@@ -52,9 +55,10 @@ Built via subagent-driven development (one implementer + reviewer + fix loop per
 
 ## ⏳ Awaiting / next steps
 
-- [ ] **Re-test `/dashboard`** in a browser (signed in) — confirm issue #1 fixed or debug it.
-- [ ] **Phase 1 — the Skeleton** (structured profile + entries/bullets/skills/languages + career tracks + CRUD). Plan ready: [docs/superpowers/plans/2026-06-28-skeleton.md](superpowers/plans/2026-06-28-skeleton.md). First task: regenerate full DB types.
-- [ ] **Custom domain + Clerk production instance** (`pk_live`/`sk_live`) — fixes protected routes reliably.
+- [ ] **Push `main` to origin** (`b79b0cc`..`afa09b6`) — auto-deploys Phase 1 + landing to Vercel prod. Awaiting go-ahead; build is green locally.
+- [ ] **Phase 2 — CV Engine** (Tectonic-on-Fly.io LaTeX compile service + locale-aware ATS templates → Master CV PDF). Phase 1 (the Skeleton it reads from) is done. No spec/plan yet — next is a spec → plan → build cycle.
+- [ ] **Deferred from Phase 1 review** (non-blocking): switch db `update*().single()` → `.maybeSingle()` + null-handling so a stale/cross-tenant id returns not-found instead of an opaque 500 (do in Phase 3 when ids arrive from JD ingestion); swap the landing `companion` placeholder gradient for real brand art; route the bespoke SplitText reveals through the shared `SplitReveal` primitive.
+- [ ] **Custom domain + Clerk production instance** (`pk_live`/`sk_live`) — fixes protected routes reliably (`curl`/`pk_test` dev-browser issue, #2 below).
 - [ ] **Before serious production:** add CI secret-scan (gitleaks/trufflehog) + a CI `npm run build`. (`.gitignore` uses a broad `.env*` with `!.env.example`.)
 - [ ] **Optional dev tooling still pending API keys** (from setup): local MCP servers — Pinecone (`@pinecone-database/mcp`), Resend (`resend-mcp`), Upstash (`@upstash/mcp-server`); and the GitHub MCP needs a PAT (note: `gh` CLI is NOT installed — GitHub ops currently use the cached git credential).
 
