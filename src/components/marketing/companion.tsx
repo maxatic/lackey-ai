@@ -1,17 +1,15 @@
 export function Companion() {
   return (
     <section className="relative overflow-hidden bg-[var(--espresso)]">
-      {/* full-bleed photo, graded into the espresso palette so text stays readable */}
-      {/* eslint-disable-next-line @next/next/no-img-element -- picsum placeholder, swap for a local /public asset */}
-      <img
-        src="https://picsum.photos/seed/lackey-companion-hopeful-cafe/1800/1000"
-        alt=""
+      {/* TODO: swap this gradient for a local /public brand photo once available */}
+      {/* ponytail: CSS gradient placeholder — no external hotlink, looks intentional */}
+      <div
         aria-hidden="true"
-        width={1800}
-        height={1000}
-        loading="lazy"
-        decoding="async"
-        className="absolute inset-0 h-full w-full object-cover opacity-30"
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 120% 80% at 65% 40%, rgba(200,73,43,0.18) 0%, rgba(107,91,78,0.22) 45%, transparent 80%), linear-gradient(135deg, rgba(107,91,78,0.15) 0%, rgba(42,32,26,0.0) 100%)',
+        }}
       />
       <div
         aria-hidden

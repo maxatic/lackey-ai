@@ -34,7 +34,7 @@ body {
    Hide it only on marketing pages (the marketing chrome supplies its own nav).
    Dashboard/auth pages have no [data-marketing], so their header is untouched.
    ponytail: CSS-scoped hide instead of editing the shared root layout. */
-body:has([data-marketing]) header {
+body:has([data-marketing]) [data-app-header] {
   display: none !important;
 }
 

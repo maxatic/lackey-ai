@@ -25,7 +25,7 @@ export default function RootLayout({
       <body>
         <ClerkProvider>
           <PostHogProvider>
-            <header className="flex justify-end items-center gap-4 p-4 h-16">
+            <header data-app-header className="flex justify-end items-center gap-4 p-4 h-16">
               <SignedOut>
                 <SignInButton />
                 <SignUpButton />

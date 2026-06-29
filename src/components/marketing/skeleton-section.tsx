@@ -74,6 +74,7 @@ export function SkeletonSection() {
               pin: '[data-stage]',
               scrub: 1,
               anticipatePin: 1,
+              invalidateOnRefresh: true,
             },
           });
 

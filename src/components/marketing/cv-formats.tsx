@@ -169,6 +169,7 @@ export function CvFormats() {
           pin: '.formats-stage',
           pinSpacing: true,
           scrub: 1,
+          invalidateOnRefresh: true,
           onUpdate: (self) => {
             const p = self.progress;
             cards.forEach((card, i) => {

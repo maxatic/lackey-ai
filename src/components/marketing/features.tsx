@@ -85,7 +85,17 @@ export function Features() {
           host.addEventListener('pointermove', onMove);
           host.addEventListener('pointerleave', onLeave);
 
+          // Only run the per-frame ticker while Features is in view — same
+          // pattern as dot-grid.tsx. Saves CPU/heat when scrolled past.
+          let isInView = false;
+          const io = new IntersectionObserver(
+            ([entry]) => { isInView = entry.isIntersecting; },
+            { threshold: 0 },
+          );
+          io.observe(host);
+
           const tick = () => {
+            if (!isInView) return;
             // Per-card push from cursor velocity, weighted by proximity. Mirrors
             // calculatePushForce() in the source: weight = (1 - d/R)^3.
             const speed = Math.hypot(cursor.vx, cursor.vy);
@@ -138,6 +148,7 @@ export function Features() {
 
           return () => {
             gsap.ticker.remove(tick);
+            io.disconnect();
             host.removeEventListener('pointermove', onMove);
             host.removeEventListener('pointerleave', onLeave);
             // Drop the inline transforms so the static grid is clean again.

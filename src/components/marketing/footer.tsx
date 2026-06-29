@@ -95,7 +95,7 @@ export function MarketingFooter() {
       <style>{`
         .lk-foot-char { display: inline-block; will-change: transform; }
         /* clip each glyph so the rise reveals out of its own box */
-        .lk-foot-h1 { overflow: hidden; }
+        .lk-foot-h2 { overflow: hidden; }
         .lk-foot-glow {
           --gx: 50; --gy: 30;
           background: radial-gradient(
@@ -117,12 +117,12 @@ export function MarketingFooter() {
       <div className="relative mx-auto max-w-[1200px] px-5 py-20 sm:px-8 md:py-28">
         {/* Giant reveal headline + CTA */}
         <div className="max-w-3xl">
-          <h1
+          <h2
             ref={headingRef}
-            className="lk-foot-h1 font-display text-[clamp(3rem,11vw,8rem)] font-semibold leading-[0.95] tracking-tight"
+            className="lk-foot-h2 font-display text-[clamp(3rem,11vw,8rem)] font-semibold leading-[0.95] tracking-tight"
           >
             Start free today.
-          </h1>
+          </h2>
 
           <p className="mt-6 text-lg leading-relaxed text-[#e7d8c8]">
             Your next application starts with one profile.
