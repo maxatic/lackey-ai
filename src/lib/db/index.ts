@@ -6,7 +6,7 @@ export type { Database } from './database.types';
 // Entity modules are re-exported as they land in later tasks. Uncomment each
 // line when its module is created (a re-export of a missing module breaks the
 // build, so they are commented until then):
-//   export * from './profile'    // Task 2
+export * from './profile'; // Task 2
 //   export * from './entries'    // Task 3
 //   export * from './bullets'    // Task 4
 //   export * from './skills'     // Task 5
