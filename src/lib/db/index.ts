@@ -8,7 +8,7 @@ export type { Database } from './database.types';
 // build, so they are commented until then):
 export * from './profile'; // Task 2
 export * from './entries'; // Task 3
-//   export * from './bullets'    // Task 4
+export * from './bullets'; // Task 4
 //   export * from './skills'     // Task 5
 //   export * from './languages'  // Task 5
 //   export * from './tracks'     // Task 6
