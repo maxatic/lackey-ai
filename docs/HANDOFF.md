@@ -1,7 +1,12 @@
 # Lackey AI — Handoff
 
-**As of:** 2026-06-29 (Phase 2 CV Engine built, reviewed & **pushed to prod**; Phase 1 + landing already verified live)
-**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` @ `a3eef2d` — pushed; origin in sync
+**As of:** 2026-06-30 (Phase 2 CV Engine built, reviewed & **pushed to prod**; Phase 1 + landing already verified live)
+**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` @ `c20c52a` — pushed; origin in sync
+
+> ## ▶ RESUME HERE (next session — likely from the Windows 11 PC)
+> **All code is committed & pushed — `git pull` on the Windows box to sync.** Phase 2 (CV Engine) is done and live in prod. **The one remaining task is an ops step: deploy the Fly.io compile service + set 2 env vars**, after which "Generate CV" produces real PDFs. Until then the button shows a clean `Missing COMPILE_SERVICE_URL` error and nothing else is affected. Full step-by-step is in **[Awaiting / next steps](#-awaiting--next-steps)** below and `compile-service/README.md`.
+>
+> **Why the switch to Windows:** the local Docker smoke test failed on the Mac with `rosetta error: failed to open elf …ld-linux-x86-64.so.2` — purely an **Apple-Silicon emulation** issue (the image pins the **x86_64** Tectonic binary). On **Windows 11 (amd64)** the image runs natively, matching Fly. **You may not even need local Docker:** `fly deploy` builds the image remotely on Fly's amd64 builders, so you can deploy straight from any machine with `flyctl` + a Fly account. The local Docker test (Step 0) is optional verification only.
 **Live:** https://lackey-ai-main.vercel.app (Vercel project **`lackey-ai-main`**, auto-deploys on push to `main`). Dashboard + all 5 Skeleton sections render correctly in prod. **CV-engine UI is live but "Generate CV" needs the Fly compile service + 2 env vars (ops step below) before it produces PDFs.**
 
 Lackey AI — an AI companion for the EU job-seeking journey (structured profile → locale-correct tailored CVs & cover letters, job tracking, interview prep). See [CLAUDE.md](../CLAUDE.md) for vision, stack, and the full phased roadmap.
@@ -82,8 +87,11 @@ Built via subagent-driven development with **parallel** execution: Task 1 (CvDat
   2. `fly secrets set COMPILE_SERVICE_SECRET=$(openssl rand -hex 32)` (save this value).
   3. `fly deploy` → note the URL, e.g. `https://<app>.fly.dev`.
   4. In **Vercel** (`lackey-ai-main`) set `COMPILE_SERVICE_URL=https://<app>.fly.dev` and `COMPILE_SERVICE_SECRET=<same value>`, then redeploy. Also add both to local `.env.local`.
-  5. Smoke: `docker build -t cv-svc compile-service && docker run -e COMPILE_SERVICE_SECRET=test -p 8080:8080 cv-svc`, then `COMPILE_SERVICE_SECRET=test node compile-service/smoke.mjs` (expects a `%PDF` response). See `compile-service/README.md`.
-  - Until this is done, the Generate button throws a clean `Missing COMPILE_SERVICE_URL` error; the rest of the app is unaffected.
+  5. **(optional) Local smoke** — run every command from the **repo root** (the earlier "path not found"/`ECONNREFUSED` errors were just from running them in `~`): `docker build -t cv-svc compile-service && docker run -e COMPILE_SERVICE_SECRET=test -p 8080:8080 cv-svc`, then in a 2nd terminal `COMPILE_SERVICE_SECRET=test node compile-service/smoke.mjs` (expects `OK … %PDF`). See `compile-service/README.md`.
+  - **`fly deploy` does NOT need local Docker** — it builds remotely on Fly's amd64 builders. The local smoke is optional verification.
+  - **Platform note:** the image pins the **x86_64** Tectonic binary, so the local Docker test runs natively on **Windows 11 (amd64)** but fails on **Apple-Silicon Macs** under Rosetta (`rosetta error: …ld-linux-x86-64.so.2`). That error is local-emulation-only and does **not** affect Fly (real x86_64).
+  - The `Dockerfile` was hardened (`c20c52a`) to bake the Tectonic bundle into a shared cache dir (`TECTONIC_CACHE_DIR=/var/cache/tectonic`) so cold-start compiles don't re-download it — important under scale-to-zero.
+  - Until this whole step is done, the Generate button throws a clean `Missing COMPILE_SERVICE_URL` error; the rest of the app is unaffected.
 - [ ] **Phase 2 — CV Engine: DONE & pushed** (see the Phase 2 section above). [spec](superpowers/specs/2026-06-29-cv-engine-design.md), [plan](superpowers/plans/2026-06-29-cv-engine.md). Deferred follow-ups (non-blocking): render `details` fields (education degree/field/grade, cert issuer/url) in `renderEntry`; NL/Europass templates; translated headings beyond DE; DE photo block; swap the per-entry `listBullets` N+1 for a batched query if it ever matters.
 - [ ] **Phase 3 — Node CV** (next per roadmap): JD ingestion (paste URL/text → structured JD; shared module reused by Phase 4) + AI diff vs the master CV (Anthropic Claude) → accept → tailored "Node CV". Reads the same `CvData`/renderer pipeline just built. ANTHROPIC_API_KEY lights up here.
   - **Parallelism worked well:** Wave A ran 5 agents at once on disjoint files (own-test-only, no agent commits, central integration) with zero conflicts — repeat that pattern. The only shared-file seam was `database.types.ts`; keep such seams to one agent.
