@@ -43,3 +43,6 @@ next-env.d.ts
 
 # superpowers sdd ledger (scratch)
 .superpowers/
+
+# local design-reference asset dump (not part of the app, ~2GB)
+/Awwwards Pack/
