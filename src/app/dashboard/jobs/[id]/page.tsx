@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { ArrowLeft } from '@phosphor-icons/react/dist/ssr';
 import { getJob } from '@/lib/db/jobs';
 import { listTracks } from '@/lib/db/tracks';
 import { listCvDocumentsByJob } from '@/lib/db/cv-documents';
@@ -16,21 +17,35 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
 
   return (
     <div className="flex flex-col gap-6">
+      <div>
+        <Link
+          href="/dashboard/jobs"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--ink-soft)] transition-colors hover:text-[var(--ink)]"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          All jobs
+        </Link>
+      </div>
+
       <JobHeader jobId={job.id} title={job.title} company={job.company} />
 
       {parsed && (
-        <section className="rounded border p-4">
-          <h2 className="mb-2 text-lg font-semibold">Parsed job description</h2>
-          {parsed.location && <p className="text-sm text-gray-600">Location: {parsed.location}</p>}
+        <section className="app-card p-5">
+          <h2 className="section-title">Parsed job description</h2>
+          {parsed.location && (
+            <p className="mt-2 text-sm text-[var(--ink-soft)]">
+              Location: {parsed.location}
+            </p>
+          )}
           {parsed.requirements.length > 0 && (
-            <ul className="mt-2 list-disc pl-5 text-sm">
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm leading-relaxed text-[var(--ink)]">
               {parsed.requirements.map((r) => <li key={r}>{r}</li>)}
             </ul>
           )}
           {parsed.keywords.length > 0 && (
-            <p className="mt-2 flex flex-wrap gap-1">
+            <p className="mt-4 flex flex-wrap gap-1.5">
               {parsed.keywords.map((k) => (
-                <span key={k} className="rounded bg-gray-100 px-2 py-0.5 text-xs">{k}</span>
+                <span key={k} className="chip chip-quiet">{k}</span>
               ))}
             </p>
           )}
@@ -38,9 +53,13 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
       )}
 
       {tracks.length === 0 ? (
-        <p className="text-sm">
-          You need a Career Track to tailor from — <Link href="/dashboard/tracks/new" className="text-blue-600 underline">create one</Link>.
-        </p>
+        <div className="empty-state">
+          You need a Career Track to tailor from —{' '}
+          <Link href="/dashboard/tracks/new" className="action-link">
+            create one
+          </Link>
+          .
+        </div>
       ) : (
         <TailorCv
           jobId={job.id}

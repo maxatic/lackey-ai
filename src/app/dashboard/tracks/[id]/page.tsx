@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft } from '@phosphor-icons/react/dist/ssr';
 import { listTracks } from '@/lib/db/tracks';
 import { TrackForm } from '@/components/track-form';
 import { updateTrackAction } from '../actions';
@@ -19,8 +21,20 @@ export default async function EditTrackPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-4 text-2xl font-semibold">Edit Career Track</h1>
-      <TrackForm track={track} action={updateTrackAction.bind(null, id)} submitLabel="Save changes" />
+      <Link
+        href="/dashboard/tracks"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--ink-soft)] transition-colors hover:text-[var(--ink)]"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        All tracks
+      </Link>
+      <h1 className="app-title mt-4">{track.name}</h1>
+      <p className="app-subtitle">
+        Edit the track, then generate a locale-correct PDF from it.
+      </p>
+      <div className="app-card mt-8 p-5">
+        <TrackForm track={track} action={updateTrackAction.bind(null, id)} submitLabel="Save changes" />
+      </div>
       <GenerateCv
         trackId={id}
         defaultLocale={defaultLocale}

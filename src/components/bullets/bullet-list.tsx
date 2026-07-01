@@ -2,6 +2,7 @@
 'use client';
 
 import { useTransition } from 'react';
+import { CaretUp, CaretDown } from '@phosphor-icons/react';
 import { BulletForm } from './bullet-form';
 import type { Bullet } from '@/lib/db/bullets';
 
@@ -33,32 +34,39 @@ export function BulletList({
   }
 
   return (
-    <section className="flex flex-col gap-3" aria-label="Achievement bullets">
-      <ul className="flex flex-col gap-2">
+    <section className="flex flex-col gap-4" aria-label="Achievement bullets">
+      <h2 className="section-title">Achievement bullets</h2>
+      {bullets.length === 0 && (
+        <div className="empty-state">
+          No bullets yet. Each one is a single achievement — start with a verb,
+          end with a result.
+        </div>
+      )}
+      <ul className="flex flex-col gap-3">
         {bullets.map((b, i) => (
-          <li key={b.id} className="rounded border border-gray-200 p-2">
-            <div className="flex items-start gap-2">
-              <div className="flex flex-col">
+          <li key={b.id} className="app-card p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex flex-col gap-1">
                 <button
                   type="button"
                   aria-label="Move up"
                   disabled={i === 0 || isPending}
                   onClick={() => move(i, -1)}
-                  className="text-xs disabled:opacity-30"
+                  className="grid h-6 w-6 place-items-center rounded-md text-[var(--ink-soft)] transition-colors hover:bg-[var(--paper-2)] hover:text-[var(--ink)] disabled:opacity-30"
                 >
-                  ▲
+                  <CaretUp className="h-3.5 w-3.5" weight="bold" />
                 </button>
                 <button
                   type="button"
                   aria-label="Move down"
                   disabled={i === bullets.length - 1 || isPending}
                   onClick={() => move(i, 1)}
-                  className="text-xs disabled:opacity-30"
+                  className="grid h-6 w-6 place-items-center rounded-md text-[var(--ink-soft)] transition-colors hover:bg-[var(--paper-2)] hover:text-[var(--ink)] disabled:opacity-30"
                 >
-                  ▼
+                  <CaretDown className="h-3.5 w-3.5" weight="bold" />
                 </button>
               </div>
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <BulletForm
                   action={updateAction.bind(null, b.id)}
                   bullet={b}
@@ -69,7 +77,7 @@ export function BulletList({
                 <button
                   type="submit"
                   aria-label="Delete bullet"
-                  className="text-sm text-red-600"
+                  className="action-link action-link-danger"
                 >
                   Delete
                 </button>
@@ -78,7 +86,8 @@ export function BulletList({
           </li>
         ))}
       </ul>
-      <div className="rounded border border-dashed border-gray-300 p-2">
+      <div className="rounded-2xl border border-dashed border-[var(--line)] p-4">
+        <p className="field-label">New bullet</p>
         <BulletForm action={createAction} submitLabel="Add bullet" />
       </div>
     </section>

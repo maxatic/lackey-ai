@@ -23,47 +23,78 @@ export default async function EntriesPage({
   }
 
   return (
-    <div className="max-w-2xl space-y-8">
-      <h1 className="text-2xl font-bold">Entries</h1>
+    <div className="max-w-2xl space-y-10">
+      <header>
+        <p className="kicker">Your skeleton</p>
+        <h1 className="app-title mt-2">Entries</h1>
+        <p className="app-subtitle">
+          Work, education and projects. Each entry carries its own achievement
+          bullets, which Lackey reorders and rewords per job.
+        </p>
+      </header>
+
+      {entries.length === 0 && (
+        <div className="empty-state">
+          Nothing here yet. Add your first entry below — start with your most
+          recent role.
+        </div>
+      )}
 
       {ENTRY_KINDS.map((kind) => {
         const rows = byKind.get(kind) ?? [];
         if (rows.length === 0) return null;
         return (
-          <section key={kind} className="space-y-3">
-            <h2 className="text-lg font-semibold">{KIND_LABELS[kind]}</h2>
-            {rows.map((entry) =>
-              edit === entry.id ? (
-                <EntryForm
-                  key={entry.id}
-                  entry={entry}
-                  action={updateEntryAction}
-                  submitLabel="Save"
-                />
-              ) : (
-                <div key={entry.id} className="flex items-center justify-between border rounded px-3 py-2">
-                  <div>
-                    <div className="font-medium">{entry.title}</div>
-                    <div className="text-sm text-gray-500">{entry.organization ?? ''}</div>
+          <section key={kind}>
+            <h2 className="section-title">{KIND_LABELS[kind]}</h2>
+            <div className="app-card mt-3 overflow-hidden">
+              {rows.map((entry) =>
+                edit === entry.id ? (
+                  <div key={entry.id} className="border-t border-[var(--line)]/60 p-4 first:border-t-0">
+                    <EntryForm
+                      entry={entry}
+                      action={updateEntryAction}
+                      submitLabel="Save"
+                    />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Link href={`/dashboard/entries/${entry.id}`} className="text-sm underline">Bullets</Link>
-                    <Link href={`/dashboard/entries?edit=${entry.id}`} className="text-sm underline">Edit</Link>
-                    <form action={deleteEntryAction}>
-                      <input type="hidden" name="id" value={entry.id} />
-                      <button type="submit" className="text-sm text-red-600 underline">Delete</button>
-                    </form>
+                ) : (
+                  <div key={entry.id} className="app-row">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-[var(--ink)]">
+                        {entry.title}
+                      </p>
+                      {entry.organization && (
+                        <p className="truncate text-sm text-[var(--ink-soft)]">
+                          {entry.organization}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-3">
+                      <Link href={`/dashboard/entries/${entry.id}`} className="action-link">
+                        Bullets
+                      </Link>
+                      <Link href={`/dashboard/entries?edit=${entry.id}`} className="action-link">
+                        Edit
+                      </Link>
+                      <form action={deleteEntryAction}>
+                        <input type="hidden" name="id" value={entry.id} />
+                        <button type="submit" className="action-link action-link-danger">
+                          Delete
+                        </button>
+                      </form>
+                    </div>
                   </div>
-                </div>
-              )
-            )}
+                )
+              )}
+            </div>
           </section>
         );
       })}
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Add entry</h2>
-        <EntryForm action={createEntryAction} submitLabel="Add" />
+      <section>
+        <h2 className="section-title">Add entry</h2>
+        <div className="app-card mt-3 p-5">
+          <EntryForm action={createEntryAction} submitLabel="Add entry" />
+        </div>
       </section>
     </div>
   );

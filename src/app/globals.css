@@ -1,62 +1,73 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f1e7;
+  --foreground: #1e2a23;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
-   Marketing landing page (/)  — scoped to [data-marketing] so nothing here
+   Brand palette — shared by marketing, dashboard and auth. One warm family,
+   ONE accent (deep evergreen), serif display type. Editorial, calm, premium.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --paper: #f6f1e7;       /* warm cream base            */
+  --paper-2: #ede5d2;     /* deeper stone (alt sections)*/
+  --card: #fdfaf2;        /* raised surface             */
+  --ink: #1e2a23;         /* green-tinted near-black    */
+  --ink-soft: #63705f;    /* muted sage body text       */
+  --line: #ded5bf;        /* hairline / borders         */
+  --accent: #2e5c46;      /* deep evergreen — the only accent */
+  --accent-ink: #1f4433;  /* darker accent for hover    */
+  --accent-tint: #dfe8d7; /* sage wash background       */
+  --espresso: #14231c;    /* the single dark moment (deep forest) */
+  --danger: #a03c2e;      /* destructive actions only   */
+}
+
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  letter-spacing: -0.015em;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Marketing landing page (/) — scoped to [data-marketing] so nothing here
    leaks into the dashboard or auth routes. Warm & human, light theme locked.
    ─────────────────────────────────────────────────────────────────────────── */
 
 /* The root layout renders a global scaffold <header> with raw Clerk buttons.
-   Hide it only on marketing pages (the marketing chrome supplies its own nav).
-   Dashboard/auth pages have no [data-marketing], so their header is untouched.
-   ponytail: CSS-scoped hide instead of editing the shared root layout. */
-body:has([data-marketing]) [data-app-header] {
+   Hide it wherever a surface supplies its own chrome (marketing nav, dashboard
+   sidebar, auth card). ponytail: CSS-scoped hide instead of editing the shared
+   root layout. */
+body:has([data-marketing]) [data-app-header],
+body:has([data-app]) [data-app-header],
+body:has([data-auth]) [data-app-header] {
   display: none !important;
 }
 
 [data-marketing] {
-  /* Palette — one warm family, ONE accent (terracotta). Locked across the page. */
-  --paper: #fbf6ee;       /* base warm cream            */
-  --paper-2: #f4ead9;     /* deeper sand (alt sections) */
-  --ink: #251b15;         /* warm near-black text       */
-  --ink-soft: #6b5b4e;    /* muted warm body text       */
-  --line: #e7d9c5;        /* hairline / borders         */
-  --accent: #c8492b;      /* terracotta — the only accent */
-  --accent-ink: #a23a20;  /* darker accent for hover    */
-  --accent-tint: #f3ddd1; /* accent wash background     */
-  --espresso: #2a201a;    /* the single dark moment     */
-
   color-scheme: light;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-body), ui-sans-serif, system-ui, -apple-system, sans-serif;
   font-synthesis-weight: none;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
 /* Lock the warm light theme even if the OS prefers dark (deliberate brand choice). */
@@ -65,16 +76,6 @@ body:has([data-marketing]) [data-app-header] {
     background: var(--paper);
     color: var(--ink);
   }
-}
-
-[data-marketing] .font-display {
-  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: -0.02em;
-}
-
-[data-marketing] ::selection {
-  background: var(--accent);
-  color: #fff;
 }
 
 html:has([data-marketing]) {
@@ -161,3 +162,203 @@ html.lenis body {
 .lenis.lenis-smooth iframe {
   pointer-events: none;
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   App workspace (/dashboard) — scoped to [data-app]. Same brand family as
+   marketing, tuned for daily-use calm: raised cards on cream, serif titles,
+   evergreen actions. All components below are plain classes so pages stay
+   terse and consistent.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+[data-app] {
+  color-scheme: light;
+  background: var(--paper);
+  color: var(--ink);
+  font-synthesis-weight: none;
+}
+
+[data-app] .tabular { font-variant-numeric: tabular-nums; }
+
+/* Page title — the serif moment on every screen. */
+.app-title {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.app-subtitle {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 42rem;
+}
+/* Small uppercase kicker label. */
+.kicker {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.section-title {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+/* Raised surface. */
+.app-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 1.1rem;
+  box-shadow: 0 14px 30px -24px rgba(20, 35, 28, 0.35);
+}
+
+/* Buttons ------------------------------------------------------------------ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.66rem 1.15rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset,
+    0 10px 22px -12px rgba(31, 68, 51, 0.55);
+}
+.btn-primary:hover:not(:disabled) { background: var(--accent-ink); }
+.btn-quiet {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.btn-quiet:hover:not(:disabled) {
+  background: var(--paper-2);
+  border-color: color-mix(in srgb, var(--ink-soft) 40%, var(--line));
+}
+/* Small inline text actions (edit / delete rows). */
+.action-link {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  cursor: pointer;
+}
+.action-link:hover { color: var(--accent-ink); text-decoration-color: currentColor; }
+.action-link-danger { color: var(--danger); }
+.action-link-danger:hover { color: color-mix(in srgb, var(--danger) 80%, black); }
+
+/* Fields -------------------------------------------------------------------- */
+.field {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: #fff;
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  padding: 0.55rem 0.8rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field::placeholder { color: color-mix(in srgb, var(--ink-soft) 70%, transparent); }
+.field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.field-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.35rem;
+}
+
+/* Chips / status pills. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 9999px;
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+}
+.chip-quiet {
+  background: var(--paper-2);
+  color: var(--ink-soft);
+}
+
+/* Row inside a list card. */
+.app-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+}
+.app-row + .app-row { border-top: 1px solid color-mix(in srgb, var(--line) 65%, transparent); }
+
+/* Empty state. */
+.empty-state {
+  border: 1px dashed var(--line);
+  border-radius: 1.1rem;
+  padding: 2.2rem 1.5rem;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  background: color-mix(in srgb, var(--paper-2) 40%, transparent);
+}
+
+/* Sidebar navigation. */
+.app-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border-radius: 0.7rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.app-nav-link:hover { background: var(--paper-2); color: var(--ink); }
+.app-nav-link[aria-current='page'] {
+  background: var(--accent-tint);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+/* Keyboard focus — visible everywhere in the app. */
+[data-app] :focus-visible,
+[data-auth] :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Inline feedback. */
+.form-error { font-size: 0.85rem; color: var(--danger); }

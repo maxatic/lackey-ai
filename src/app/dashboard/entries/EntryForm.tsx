@@ -15,16 +15,16 @@ export default function EntryForm({ entry, action, submitLabel }: Props) {
   const details = (entry?.details ?? {}) as Record<string, string>;
 
   return (
-    <form action={action} className="space-y-3 border p-4 rounded-md">
+    <form action={action} className="space-y-4">
       {entry && <input type="hidden" name="id" value={entry.id} />}
 
       <label className="block">
-        <span className="text-sm font-medium">Kind</span>
+        <span className="field-label">Kind</span>
         <select
           name="kind"
           value={kind}
           onChange={(e) => setKind(e.target.value as EntryKind)}
-          className="block w-full border rounded px-2 py-1"
+          className="field"
         >
           {ENTRY_KINDS.map((k) => (
             <option key={k} value={k}>{KIND_LABELS[k]}</option>
@@ -33,59 +33,58 @@ export default function EntryForm({ entry, action, submitLabel }: Props) {
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium">Title</span>
-        <input name="title" defaultValue={entry?.title ?? ''} required
-          className="block w-full border rounded px-2 py-1" />
+        <span className="field-label">Title</span>
+        <input name="title" defaultValue={entry?.title ?? ''} required className="field" />
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium">Organization</span>
-        <input name="organization" defaultValue={entry?.organization ?? ''}
-          className="block w-full border rounded px-2 py-1" />
+        <span className="field-label">Organization</span>
+        <input name="organization" defaultValue={entry?.organization ?? ''} className="field" />
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium">Location</span>
-        <input name="location" defaultValue={entry?.location ?? ''}
-          className="block w-full border rounded px-2 py-1" />
+        <span className="field-label">Location</span>
+        <input name="location" defaultValue={entry?.location ?? ''} className="field" />
       </label>
 
       <div className="flex gap-3">
         <label className="block flex-1">
-          <span className="text-sm font-medium">Start date</span>
-          <input type="date" name="start_date" defaultValue={entry?.start_date ?? ''}
-            className="block w-full border rounded px-2 py-1" />
+          <span className="field-label">Start date</span>
+          <input type="date" name="start_date" defaultValue={entry?.start_date ?? ''} className="field" />
         </label>
         <label className="block flex-1">
-          <span className="text-sm font-medium">End date</span>
-          <input type="date" name="end_date" defaultValue={entry?.end_date ?? ''}
-            className="block w-full border rounded px-2 py-1" />
+          <span className="field-label">End date</span>
+          <input type="date" name="end_date" defaultValue={entry?.end_date ?? ''} className="field" />
         </label>
       </div>
 
       <label className="flex items-center gap-2">
-        <input type="checkbox" name="is_current" defaultChecked={entry?.is_current ?? false} />
-        <span className="text-sm font-medium">Current</span>
+        <input
+          type="checkbox"
+          name="is_current"
+          defaultChecked={entry?.is_current ?? false}
+          className="h-4 w-4 accent-[var(--accent)]"
+        />
+        <span className="text-sm font-medium text-[var(--ink)]">Current position</span>
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium">Summary</span>
-        <textarea name="summary" defaultValue={entry?.summary ?? ''}
-          className="block w-full border rounded px-2 py-1" />
+        <span className="field-label">Summary</span>
+        <textarea name="summary" defaultValue={entry?.summary ?? ''} className="field" rows={3} />
       </label>
 
       {DETAIL_FIELDS[kind].map(({ key, label }) => (
         <label key={key} className="block">
-          <span className="text-sm font-medium">{label}</span>
+          <span className="field-label">{label}</span>
           <input
             name={`details.${key}`}
             defaultValue={entry?.kind === kind ? (details[key] ?? '') : ''}
-            className="block w-full border rounded px-2 py-1"
+            className="field"
           />
         </label>
       ))}
 
-      <button type="submit" className="border rounded px-3 py-1 font-medium">
+      <button type="submit" className="btn btn-primary">
         {submitLabel}
       </button>
     </form>

@@ -48,7 +48,7 @@ export function MarketingNav() {
               </Link>
               <Link
                 href="/sign-up"
-                className="group inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-5 py-2.5 text-[0.95rem] font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.25)_inset,0_8px_20px_-8px_rgba(200,73,43,0.55)] transition-all duration-200 hover:bg-[var(--accent-ink)] active:translate-y-px"
+                className="group inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-5 py-2.5 text-[0.95rem] font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.25)_inset,0_8px_20px_-8px_rgba(46,92,70,0.55)] transition-all duration-200 hover:bg-[var(--accent-ink)] active:translate-y-px"
               >
                 Start free
                 <ArrowRight

@@ -1,28 +1,54 @@
 import Link from 'next/link';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
 import { listJobs } from '@/lib/db/jobs';
 import { AddJobForm } from './AddJobForm';
 
 export default async function JobsPage() {
   const jobs = await listJobs();
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">Jobs</h1>
-      <AddJobForm />
-      {jobs.length === 0 ? (
-        <p className="text-sm text-gray-500">No jobs yet — paste a job description above to get started.</p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {jobs.map((job) => (
-            <li key={job.id}>
-              <Link href={`/dashboard/jobs/${job.id}`} className="block rounded border p-3 hover:bg-gray-50">
-                <span className="font-medium">{job.title}</span>
-                {job.company && <span className="text-gray-500"> · {job.company}</span>}
-                <span className="block text-xs text-gray-400">{new Date(job.created_at).toLocaleDateString()}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className="max-w-2xl">
+      <p className="kicker">Applications</p>
+      <h1 className="app-title mt-2">Jobs</h1>
+      <p className="app-subtitle">
+        Paste a job description and Lackey reads what the role actually needs —
+        then tailors your CV to it.
+      </p>
+
+      <div className="app-card mt-8 p-5">
+        <AddJobForm />
+      </div>
+
+      <div className="mt-8">
+        {jobs.length === 0 ? (
+          <div className="empty-state">
+            No jobs yet — paste a job description above to get started.
+          </div>
+        ) : (
+          <ul className="app-card overflow-hidden">
+            {jobs.map((job) => (
+              <li key={job.id}>
+                <Link
+                  href={`/dashboard/jobs/${job.id}`}
+                  className="app-row group transition-colors hover:bg-[var(--paper-2)]/50"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[var(--ink)]">
+                      {job.title}
+                    </p>
+                    <p className="truncate text-sm text-[var(--ink-soft)]">
+                      {job.company ? `${job.company} · ` : ''}
+                      <span className="tabular">
+                        {new Date(job.created_at).toLocaleDateString()}
+                      </span>
+                    </p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-[var(--ink-soft)] transition-transform duration-200 group-hover:translate-x-1" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

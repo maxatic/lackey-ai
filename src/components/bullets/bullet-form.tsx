@@ -21,13 +21,10 @@ export function BulletForm({
         rows={2}
         defaultValue={bullet?.text ?? ''}
         placeholder="Achievement bullet (English)"
-        className="w-full rounded border border-gray-300 p-2 text-sm"
+        className="field"
       />
       <TagsInput name="tags" defaultTags={bullet?.tags ?? []} />
-      <button
-        type="submit"
-        className="self-start rounded bg-black px-3 py-1.5 text-sm text-white"
-      >
+      <button type="submit" className="btn btn-quiet self-start !px-4 !py-2">
         {submitLabel}
       </button>
     </form>

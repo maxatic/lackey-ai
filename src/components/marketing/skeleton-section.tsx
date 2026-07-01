@@ -141,7 +141,7 @@ export function SkeletonSection() {
           <div className="reveal order-2 lg:order-1">
             <div className="mx-auto max-w-md rounded-3xl border border-[var(--line)] bg-[var(--paper-2)]/50 p-6 sm:p-8">
               {/* The Skeleton card */}
-              <div className="rounded-2xl border border-[var(--line)] bg-white p-5 shadow-[0_18px_40px_-28px_rgba(37,27,21,0.45)]">
+              <div className="rounded-2xl border border-[var(--line)] bg-white p-5 shadow-[0_18px_40px_-28px_rgba(20,35,28,0.45)]">
                 <div className="flex items-center justify-between">
                   <span className="font-display text-sm font-semibold text-[var(--ink)]">
                     Your profile

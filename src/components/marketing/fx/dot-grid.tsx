@@ -3,9 +3,9 @@
 import { useEffect, useRef } from 'react'
 
 // Warm palette (Lackey AI light theme). Base dots are a faint warm grey;
-// dots near the cursor interpolate toward terracotta --accent and swell.
-const BASE_RGB = { r: 217, g: 203, b: 184 } // #d9cbb8 warm grey
-const ACTIVE_RGB = { r: 200, g: 73, b: 43 } // #c8492b terracotta accent
+// dots near the cursor interpolate toward evergreen --accent and swell.
+const BASE_RGB = { r: 209, g: 201, b: 178 } // #d1c9b2 warm stone
+const ACTIVE_RGB = { r: 46, g: 92, b: 70 } // #2e5c46 evergreen accent
 
 // Tuning (ported from the reference, gentled for a warm marketing backdrop).
 const DOT_SIZE = 5

@@ -1,4 +1,6 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft } from '@phosphor-icons/react/dist/ssr';
 import { listEntries } from '@/lib/db/entries';
 import { listSkills } from '@/lib/db/skills';
 import { listTracks } from '@/lib/db/tracks';
@@ -27,9 +29,19 @@ export default async function CuratePage({
   return (
     <div className="max-w-3xl space-y-8">
       <header>
-        <h1 className="text-2xl font-semibold">Curate: {track.name}</h1>
-        <p className="text-sm text-gray-500">
-          Choose which entries and skills appear, and order them.
+        <Link
+          href={`/dashboard/tracks/${trackId}`}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--ink-soft)] transition-colors hover:text-[var(--ink)]"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to track
+        </Link>
+        <h1 className="app-title mt-4">
+          Curate <span className="italic text-[var(--accent)]">{track.name}</span>
+        </h1>
+        <p className="app-subtitle">
+          Choose which entries and skills appear on this track&rsquo;s CV, and
+          the order they appear in.
         </p>
       </header>
       <CurateEditor

@@ -6,8 +6,15 @@ export default async function ProfilePage() {
   const profile = await getProfile();
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold">Your profile</h1>
-      <ProfileForm profile={profile} />
+      <p className="kicker">Your skeleton</p>
+      <h1 className="app-title mt-2">Profile</h1>
+      <p className="app-subtitle">
+        The personal details every CV starts from. Locale flags mark fields
+        some countries expect and others forbid.
+      </p>
+      <div className="mt-8">
+        <ProfileForm profile={profile} />
+      </div>
     </div>
   );
 }

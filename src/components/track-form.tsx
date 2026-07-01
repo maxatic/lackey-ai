@@ -23,43 +23,43 @@ export function TrackForm({ track, action, submitLabel }: Props) {
       }}
       className="flex max-w-xl flex-col gap-4"
     >
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Track name</span>
+      <label className="block">
+        <span className="field-label">Track name</span>
         <input
           name="name"
           required
           defaultValue={track?.name ?? ''}
           placeholder="e.g. Product Manager"
-          className="rounded border px-3 py-2"
+          className="field"
         />
       </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Target title</span>
+      <label className="block">
+        <span className="field-label">Target title</span>
         <input
           name="target_title"
           defaultValue={track?.target_title ?? ''}
           placeholder="Headline used on the CV"
-          className="rounded border px-3 py-2"
+          className="field"
         />
       </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Summary (track-specific statement)</span>
+      <label className="block">
+        <span className="field-label">Summary (track-specific statement)</span>
         <textarea
           name="summary"
           rows={4}
           defaultValue={track?.summary ?? ''}
-          className="rounded border px-3 py-2"
+          className="field"
         />
       </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Default locale</span>
+      <label className="block">
+        <span className="field-label">Default locale</span>
         <select
           name="default_locale"
           defaultValue={track?.default_locale ?? 'en-GB'}
-          className="rounded border px-3 py-2"
+          className="field !w-auto"
         >
           <option value="en-GB">en-GB</option>
           <option value="en-US">en-US</option>
@@ -70,21 +70,17 @@ export function TrackForm({ track, action, submitLabel }: Props) {
         </select>
       </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Default template</span>
+      <label className="block">
+        <span className="field-label">Default template</span>
         <input
           name="default_template"
           defaultValue={track?.default_template ?? ''}
           placeholder="Template id (phase 2)"
-          className="rounded border px-3 py-2"
+          className="field"
         />
       </label>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-      >
+      <button type="submit" disabled={pending} className="btn btn-primary self-start">
         {pending ? 'Saving…' : submitLabel}
       </button>
     </form>

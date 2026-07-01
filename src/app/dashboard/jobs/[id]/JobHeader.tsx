@@ -23,11 +23,15 @@ export function JobHeader({ jobId, title, company }: { jobId: string; title: str
   if (editing) {
     return (
       <form onSubmit={save} className="flex flex-wrap items-center gap-2">
-        <input name="title" defaultValue={title} required className="rounded border px-2 py-1 text-lg font-bold" />
-        <input name="company" defaultValue={company ?? ''} placeholder="Company" className="rounded border px-2 py-1 text-sm" />
-        <button type="submit" disabled={isPending} className="rounded bg-blue-600 px-3 py-1 text-sm text-white disabled:opacity-50">Save</button>
-        <button type="button" onClick={() => setEditing(false)} className="text-sm underline">Cancel</button>
-        {error && <p className="w-full text-sm text-red-600">{error}</p>}
+        <input name="title" defaultValue={title} required className="field !w-64 font-semibold" />
+        <input name="company" defaultValue={company ?? ''} placeholder="Company" className="field !w-48" />
+        <button type="submit" disabled={isPending} className="btn btn-primary !px-4 !py-2">
+          Save
+        </button>
+        <button type="button" onClick={() => setEditing(false)} className="btn btn-quiet !px-4 !py-2">
+          Cancel
+        </button>
+        {error && <p className="form-error w-full">{error}</p>}
       </form>
     );
   }
@@ -35,11 +39,13 @@ export function JobHeader({ jobId, title, company }: { jobId: string; title: str
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-bold">{title}</h1>
-        {company && <p className="text-gray-500">{company}</p>}
+        <h1 className="app-title">{title}</h1>
+        {company && <p className="mt-1 text-[var(--ink-soft)]">{company}</p>}
       </div>
-      <div className="flex gap-3">
-        <button type="button" onClick={() => setEditing(true)} className="text-sm text-blue-600 underline">Edit</button>
+      <div className="flex shrink-0 gap-3 pt-2">
+        <button type="button" onClick={() => setEditing(true)} className="action-link">
+          Edit
+        </button>
         <button
           type="button"
           disabled={isPending}
@@ -48,7 +54,7 @@ export function JobHeader({ jobId, title, company }: { jobId: string; title: str
               startTransition(() => deleteJobAction(jobId));
             }
           }}
-          className="text-sm text-red-600 underline disabled:opacity-50"
+          className="action-link action-link-danger disabled:opacity-50"
         >
           Delete
         </button>

@@ -14,18 +14,15 @@ export function TagsInput({ name, defaultTags = [] }: { name: string; defaultTag
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1 rounded border border-gray-300 p-1.5">
+    <div className="flex flex-wrap items-center gap-1.5 rounded-[0.7rem] border border-[var(--line)] bg-white p-1.5 transition-colors focus-within:border-[var(--accent)]">
       {tags.map((t) => (
-        <span
-          key={t}
-          className="flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 text-sm"
-        >
+        <span key={t} className="chip chip-quiet">
           {t}
           <button
             type="button"
             aria-label={`Remove ${t}`}
             onClick={() => setTags(tags.filter((x) => x !== t))}
-            className="text-gray-500 hover:text-gray-800"
+            className="text-[var(--ink-soft)] transition-colors hover:text-[var(--ink)]"
           >
             ×
           </button>
@@ -44,7 +41,7 @@ export function TagsInput({ name, defaultTags = [] }: { name: string; defaultTag
         }}
         onBlur={commit}
         placeholder="Add tag…"
-        className="min-w-[6rem] flex-1 border-none p-0.5 text-sm focus:outline-none"
+        className="min-w-[6rem] flex-1 border-none bg-transparent p-0.5 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/70 focus:outline-none"
       />
       <input type="hidden" name={name} value={tags.join(',')} />
     </div>

@@ -37,7 +37,7 @@ function SheetLabel({ children }: { children: React.ReactNode }) {
 
 function GermanSheet() {
   return (
-    <div className="w-[15.5rem] rounded-xl border border-[var(--line)] bg-white p-4 shadow-[0_24px_50px_-24px_rgba(37,27,21,0.5)] sm:w-[17rem]">
+    <div className="w-[15.5rem] rounded-xl border border-[var(--line)] bg-white p-4 shadow-[0_24px_50px_-24px_rgba(20,35,28,0.5)] sm:w-[17rem]">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-display text-base font-semibold text-[var(--ink)]">
@@ -60,7 +60,7 @@ function GermanSheet() {
 
 function UkSheet() {
   return (
-    <div className="w-[15.5rem] rounded-xl border border-[var(--line)] bg-white p-4 shadow-[0_24px_50px_-24px_rgba(37,27,21,0.5)] sm:w-[17rem]">
+    <div className="w-[15.5rem] rounded-xl border border-[var(--line)] bg-white p-4 shadow-[0_24px_50px_-24px_rgba(20,35,28,0.5)] sm:w-[17rem]">
       <p className="font-display text-base font-semibold text-[var(--ink)]">
         Mara Kovač
       </p>
@@ -77,7 +77,7 @@ function UkSheet() {
 
 function EuropassSheet() {
   return (
-    <div className="flex w-[15.5rem] gap-2 rounded-xl border border-[var(--line)] bg-white p-4 shadow-[0_24px_50px_-24px_rgba(37,27,21,0.5)] sm:w-[17rem]">
+    <div className="flex w-[15.5rem] gap-2 rounded-xl border border-[var(--line)] bg-white p-4 shadow-[0_24px_50px_-24px_rgba(20,35,28,0.5)] sm:w-[17rem]">
       <div className="w-[34%] shrink-0 rounded-md bg-[var(--paper-2)] p-2">
         <div className="h-8 w-8 rounded-full bg-[var(--accent-tint)]" />
         <div className="mt-2 space-y-1">

@@ -1,5 +1,6 @@
 'use client';
 import { useMemo, useState, useTransition } from 'react';
+import { Check, X, Sparkle, FilePdf } from '@phosphor-icons/react';
 import { CV_LOCALES, type CvLocale } from '@/lib/cv/types';
 import type { CvSuggestions } from '@/lib/cv/suggest';
 import type { TrackSnapshot } from '@/lib/cv/data';
@@ -66,7 +67,7 @@ function RedownloadButton({ storagePath }: { storagePath: string }) {
           window.open(url, '_blank');
         })
       }
-      className="text-xs text-blue-600 underline disabled:opacity-50"
+      className="action-link disabled:opacity-50"
     >
       {isPending ? 'Signing…' : 'Download'}
     </button>
@@ -117,40 +118,52 @@ export function TailorCv({ jobId, tracks, existingDocs }: Props) {
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded border p-4">
-      <h2 className="text-lg font-semibold">Tailor CV</h2>
-      <div className="flex items-center gap-3">
-        <label htmlFor="tailor-track" className="text-sm font-medium">Track</label>
-        <select id="tailor-track" value={trackId} onChange={(e) => setTrackId(e.target.value)} className="rounded border px-2 py-1 text-sm">
+    <section className="app-card flex flex-col gap-5 p-5">
+      <h2 className="section-title">Tailor CV</h2>
+      <div className="flex flex-wrap items-center gap-3">
+        <label htmlFor="tailor-track" className="field-label !mb-0">Track</label>
+        <select id="tailor-track" value={trackId} onChange={(e) => setTrackId(e.target.value)} className="field !w-auto">
           {tracks.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
         </select>
-        <button type="button" onClick={suggest} disabled={isPending || !trackId} className="rounded bg-blue-600 px-4 py-1 text-sm text-white disabled:opacity-50">
+        <button type="button" onClick={suggest} disabled={isPending || !trackId} className="btn btn-primary">
+          <Sparkle className="h-4 w-4" weight="fill" />
           {isPending && !result ? 'Thinking…' : 'Suggest tailoring'}
         </button>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="form-error">{error}</p>}
 
       {result && (
         <>
           {cards.length === 0 ? (
-            <p className="text-sm text-gray-500">No changes suggested — your track already fits this job well.</p>
+            <div className="empty-state">
+              No changes suggested — your track already fits this job well.
+            </div>
           ) : (
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-3">
               {cards.map((card) => {
                 const on = accepted.has(card.key);
                 return (
-                  <li key={card.key} className={`rounded border p-3 text-sm ${on ? '' : 'opacity-50'}`}>
+                  <li
+                    key={card.key}
+                    className={`rounded-2xl border p-4 text-sm transition-all duration-200 ${
+                      on
+                        ? 'border-[var(--accent)]/40 bg-[var(--accent-tint)]/35'
+                        : 'border-[var(--line)] opacity-55'
+                    }`}
+                  >
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium">{card.label}</p>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-[var(--ink)]">{card.label}</p>
                         {card.type === 'rewrite' && (
-                          <div className="mt-1">
-                            <p className="text-gray-500 line-through">{card.before}</p>
-                            <p>{card.after}</p>
+                          <div className="mt-2 space-y-1">
+                            <p className="text-[var(--ink-soft)] line-through decoration-[var(--ink-soft)]/50">
+                              {card.before}
+                            </p>
+                            <p className="text-[var(--ink)]">{card.after}</p>
                           </div>
                         )}
-                        <p className="mt-1 text-xs text-gray-500">{card.reason}</p>
+                        <p className="mt-2 text-xs text-[var(--ink-soft)]">{card.reason}</p>
                       </div>
                       <button
                         type="button"
@@ -159,9 +172,21 @@ export function TailorCv({ jobId, tracks, existingDocs }: Props) {
                           if (next.has(card.key)) next.delete(card.key); else next.add(card.key);
                           return next;
                         })}
-                        className="shrink-0 rounded border px-2 py-0.5 text-xs"
+                        className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                          on
+                            ? 'bg-[var(--accent)] text-white'
+                            : 'border border-[var(--line)] text-[var(--ink-soft)] hover:text-[var(--ink)]'
+                        }`}
                       >
-                        {on ? 'Accepted' : 'Rejected'}
+                        {on ? (
+                          <>
+                            <Check className="h-3.5 w-3.5" weight="bold" /> Accepted
+                          </>
+                        ) : (
+                          <>
+                            <X className="h-3.5 w-3.5" weight="bold" /> Rejected
+                          </>
+                        )}
                       </button>
                     </div>
                   </li>
@@ -169,16 +194,17 @@ export function TailorCv({ jobId, tracks, existingDocs }: Props) {
               })}
             </ul>
           )}
-          <div className="flex items-center gap-3">
-            <label htmlFor="node-locale" className="text-sm font-medium">Locale</label>
-            <select id="node-locale" value={locale} onChange={(e) => setLocale(e.target.value as CvLocale)} className="rounded border px-2 py-1 text-sm">
+          <div className="flex flex-wrap items-center gap-3 border-t border-[var(--line)]/60 pt-4">
+            <label htmlFor="node-locale" className="field-label !mb-0">Locale</label>
+            <select id="node-locale" value={locale} onChange={(e) => setLocale(e.target.value as CvLocale)} className="field !w-auto">
               {CV_LOCALES.map((l) => <option key={l} value={l}>{l.toUpperCase()}</option>)}
             </select>
-            <button type="button" onClick={generate} disabled={isPending} className="rounded bg-green-700 px-4 py-1 text-sm text-white disabled:opacity-50">
-              {isPending ? 'Generating…' : 'Save & Generate PDF'}
+            <button type="button" onClick={generate} disabled={isPending} className="btn btn-primary">
+              <FilePdf className="h-4 w-4" weight="bold" />
+              {isPending ? 'Generating…' : 'Save & generate PDF'}
             </button>
             {downloadUrl && (
-              <a href={downloadUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-600 underline">
+              <a href={downloadUrl} target="_blank" rel="noreferrer" className="action-link">
                 Download (valid 10 min)
               </a>
             )}
@@ -188,15 +214,17 @@ export function TailorCv({ jobId, tracks, existingDocs }: Props) {
 
       {existingDocs.length > 0 && (
         <div>
-          <h3 className="mb-1 text-sm font-semibold">Generated tailored CVs</h3>
-          <ul className="flex flex-col gap-1">
+          <h3 className="field-label">Generated tailored CVs</h3>
+          <ul className="mt-1 flex flex-col divide-y divide-[var(--line)]/60">
             {existingDocs.map((doc) => {
               const trackName = tracks.find((t) => t.id === doc.track_id)?.name ?? 'Unknown track';
               return (
-                <li key={`${doc.track_id}-${doc.locale}`} className="flex items-center gap-3 text-sm">
-                  <span className="font-medium uppercase">{doc.locale}</span>
-                  <span>{trackName}</span>
-                  <span className="text-xs text-gray-500">{new Date(doc.updated_at).toLocaleString()}</span>
+                <li key={`${doc.track_id}-${doc.locale}`} className="flex items-center gap-3 py-2.5 text-sm">
+                  <span className="chip uppercase">{doc.locale}</span>
+                  <span className="font-medium text-[var(--ink)]">{trackName}</span>
+                  <span className="tabular text-xs text-[var(--ink-soft)]">
+                    {new Date(doc.updated_at).toLocaleString()}
+                  </span>
                   <RedownloadButton storagePath={doc.storage_path} />
                 </li>
               );

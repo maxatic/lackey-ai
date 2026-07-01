@@ -184,7 +184,7 @@ export function Features() {
           transition: opacity 0.4s ease;
           background: radial-gradient(
             260px circle at var(--mx) var(--my),
-            rgba(200, 73, 43, 0.14),
+            rgba(46, 92, 70, 0.14),
             transparent 65%
           );
         }
@@ -204,7 +204,7 @@ export function Features() {
         {/* Tidy 2x2 on desktop, single column on mobile. */}
         <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2">
           {/* A - Tailored CV */}
-          <article className="reveal feature-card relative flex flex-col rounded-3xl border border-[var(--line)] bg-[var(--paper)] p-7 shadow-[0_18px_40px_-28px_rgba(37,27,21,0.45)] sm:p-8">
+          <article className="reveal feature-card relative flex flex-col rounded-3xl border border-[var(--line)] bg-[var(--paper)] p-7 shadow-[0_18px_40px_-28px_rgba(20,35,28,0.45)] sm:p-8">
             <FileMagnifyingGlass
               className="h-9 w-9 text-[var(--accent)]"
               weight="duotone"
@@ -220,7 +220,7 @@ export function Features() {
           </article>
 
           {/* B - Cover letters */}
-          <article className="reveal feature-card relative flex flex-col rounded-3xl border border-[var(--line)] bg-[var(--paper)] p-7 shadow-[0_18px_40px_-28px_rgba(37,27,21,0.45)] sm:p-8">
+          <article className="reveal feature-card relative flex flex-col rounded-3xl border border-[var(--line)] bg-[var(--paper)] p-7 shadow-[0_18px_40px_-28px_rgba(20,35,28,0.45)] sm:p-8">
             <PenNib className="h-9 w-9 text-[var(--accent)]" weight="duotone" />
             <h3 className="mt-4 font-display text-xl font-semibold text-[var(--ink)] sm:text-2xl">
               Cover letters grounded in your story
@@ -232,7 +232,7 @@ export function Features() {
           </article>
 
           {/* C - Tracker (tinted, status pills) */}
-          <article className="reveal feature-card relative flex flex-col rounded-3xl border border-[var(--line)] bg-[var(--paper-2)]/60 p-7 shadow-[0_18px_40px_-28px_rgba(37,27,21,0.45)] sm:p-8">
+          <article className="reveal feature-card relative flex flex-col rounded-3xl border border-[var(--line)] bg-[var(--paper-2)]/60 p-7 shadow-[0_18px_40px_-28px_rgba(20,35,28,0.45)] sm:p-8">
             <Kanban className="h-9 w-9 text-[var(--accent)]" weight="duotone" />
             <h3 className="mt-4 font-display text-xl font-semibold text-[var(--ink)] sm:text-2xl">
               Your whole search on one board
@@ -254,7 +254,7 @@ export function Features() {
           </article>
 
           {/* D - Interview prep (accent-tint, coming soon) */}
-          <article className="reveal feature-card relative flex flex-col rounded-3xl border border-[var(--accent-tint)] bg-[var(--accent-tint)]/55 p-7 shadow-[0_18px_40px_-28px_rgba(162,58,32,0.35)] sm:p-8">
+          <article className="reveal feature-card relative flex flex-col rounded-3xl border border-[var(--accent-tint)] bg-[var(--accent-tint)]/55 p-7 shadow-[0_18px_40px_-28px_rgba(31,68,51,0.35)] sm:p-8">
             <div className="flex items-center gap-3">
               <Microphone
                 className="h-9 w-9 text-[var(--accent-ink)]"

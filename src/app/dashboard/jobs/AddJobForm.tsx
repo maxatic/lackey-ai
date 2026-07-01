@@ -17,8 +17,10 @@ export function AddJobForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-      <label htmlFor="jd-text" className="text-sm font-medium">Add a job — paste the job description</label>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <label htmlFor="jd-text" className="field-label !mb-0">
+        Add a job — paste the job description
+      </label>
       <textarea
         id="jd-text"
         name="raw_text"
@@ -26,13 +28,13 @@ export function AddJobForm() {
         maxLength={20000}
         required
         placeholder="Paste the full job posting text here…"
-        className="rounded border p-2 text-sm"
+        className="field"
       />
       <div className="flex items-center gap-3">
-        <button type="submit" disabled={isPending} className="self-start rounded bg-blue-600 px-4 py-1 text-sm text-white disabled:opacity-50">
+        <button type="submit" disabled={isPending} className="btn btn-primary self-start">
           {isPending ? 'Parsing…' : 'Add job'}
         </button>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="form-error">{error}</p>}
       </div>
     </form>
   );

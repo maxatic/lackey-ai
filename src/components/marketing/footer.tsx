@@ -16,8 +16,8 @@ const PRODUCT = [
   { href: '#pricing', label: 'Pricing' },
 ];
 
-// Deep "single dark moment" close. Cream text on espresso; AA-safe.
-// #faf3ea on #2a201a ~= 12:1; #e07a5a accent-on-espresso ~= 5:1 (AA for large/UI text).
+// Deep "single dark moment" close. Cream text on deep forest; AA-safe.
+// #f2eee1 on #14231c ~= 13:1; the CTA inverts to cream-on-forest for contrast.
 export function MarketingFooter() {
   const root = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -90,7 +90,7 @@ export function MarketingFooter() {
     <footer
       ref={root}
       data-marketing
-      className="relative overflow-hidden bg-[var(--espresso)] text-[#faf3ea]"
+      className="relative overflow-hidden bg-[var(--espresso)] text-[#f2eee1]"
     >
       <style>{`
         .lk-foot-char { display: inline-block; will-change: transform; }
@@ -100,8 +100,8 @@ export function MarketingFooter() {
           --gx: 50; --gy: 30;
           background: radial-gradient(
             42rem 42rem at calc(var(--gx) * 1%) calc(var(--gy) * 1%),
-            rgba(224,122,90,0.22) 0%,
-            rgba(224,122,90,0.10) 32%,
+            rgba(126,178,142,0.22) 0%,
+            rgba(126,178,142,0.10) 32%,
             transparent 66%
           );
         }
@@ -124,13 +124,13 @@ export function MarketingFooter() {
             Start free today.
           </h2>
 
-          <p className="mt-6 text-lg leading-relaxed text-[#e7d8c8]">
+          <p className="mt-6 text-lg leading-relaxed text-[#cfd6c4]">
             Your next application starts with one profile.
           </p>
 
           <Link
             href="/sign-up"
-            className="group mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-8 py-4 text-base font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.18)_inset,0_18px_40px_-14px_rgba(200,73,43,0.7)] transition-transform duration-200 ease-out will-change-transform hover:-translate-y-0.5 hover:scale-[1.03] active:translate-y-0"
+            className="group mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-[#f2eee1] px-8 py-4 text-base font-semibold text-[var(--espresso)] shadow-[0_18px_40px_-14px_rgba(0,0,0,0.5)] transition-transform duration-200 ease-out will-change-transform hover:-translate-y-0.5 hover:scale-[1.03] active:translate-y-0"
           >
             Start free
             <span
@@ -146,19 +146,19 @@ export function MarketingFooter() {
         <div className="mt-20 grid grid-cols-1 gap-12 border-t border-white/10 pt-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
           <div className="max-w-xs">
             <p className="font-display text-xl font-semibold">Lackey AI</p>
-            <p className="mt-3 text-[0.95rem] leading-relaxed text-[#cdbcab]">
+            <p className="mt-3 text-[0.95rem] leading-relaxed text-[#a8b3a0]">
               Your second brain for the European job hunt.
             </p>
           </div>
 
           <nav aria-label="Product">
-            <p className="text-sm font-semibold text-[#faf3ea]">Product</p>
+            <p className="text-sm font-semibold text-[#f2eee1]">Product</p>
             <ul className="mt-4 space-y-2.5">
               {PRODUCT.map((l) => (
                 <li key={l.href}>
                   <a
                     href={l.href}
-                    className="text-[0.95rem] text-[#cdbcab] transition-colors hover:text-[#faf3ea]"
+                    className="text-[0.95rem] text-[#a8b3a0] transition-colors hover:text-[#f2eee1]"
                   >
                     {l.label}
                   </a>
@@ -168,12 +168,12 @@ export function MarketingFooter() {
           </nav>
 
           <nav aria-label="Account">
-            <p className="text-sm font-semibold text-[#faf3ea]">Account</p>
+            <p className="text-sm font-semibold text-[#f2eee1]">Account</p>
             <ul className="mt-4 space-y-2.5">
               <li>
                 <Link
                   href="/sign-in"
-                  className="text-[0.95rem] text-[#cdbcab] transition-colors hover:text-[#faf3ea]"
+                  className="text-[0.95rem] text-[#a8b3a0] transition-colors hover:text-[#f2eee1]"
                 >
                   Sign in
                 </Link>
@@ -181,7 +181,7 @@ export function MarketingFooter() {
               <li>
                 <Link
                   href="/sign-up"
-                  className="text-[0.95rem] text-[#cdbcab] transition-colors hover:text-[#faf3ea]"
+                  className="text-[0.95rem] text-[#a8b3a0] transition-colors hover:text-[#f2eee1]"
                 >
                   Start free
                 </Link>
@@ -191,7 +191,7 @@ export function MarketingFooter() {
         </div>
 
         {/* Bottom row */}
-        <div className="mt-14 flex flex-col gap-2 border-t border-white/10 pt-6 text-sm text-[#b6a493] sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-14 flex flex-col gap-2 border-t border-white/10 pt-6 text-sm text-[#8c9a88] sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; 2026 Lackey AI</p>
           <p>Made for job seekers across Europe.</p>
         </div>

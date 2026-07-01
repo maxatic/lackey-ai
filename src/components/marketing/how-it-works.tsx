@@ -156,7 +156,7 @@ export function HowItWorks() {
           {STEPS.map(({ n, Icon, title, body }) => (
             <li
               key={n}
-              className="hiw-card flex flex-col rounded-3xl border border-[var(--line)] bg-[var(--paper)] p-6 shadow-[0_18px_44px_-30px_rgba(37,27,21,0.5)] [backface-visibility:hidden] sm:p-7"
+              className="hiw-card flex flex-col rounded-3xl border border-[var(--line)] bg-[var(--paper)] p-6 shadow-[0_18px_44px_-30px_rgba(20,35,28,0.5)] [backface-visibility:hidden] sm:p-7"
             >
               <span className="font-display text-4xl font-semibold leading-none text-[var(--accent)]">
                 {n}

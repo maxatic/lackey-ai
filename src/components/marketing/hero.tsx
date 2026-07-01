@@ -15,7 +15,7 @@ export function Hero() {
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
           background:
-            'radial-gradient(1100px 680px at 12% 32%, var(--paper) 0%, rgba(251,246,238,0.72) 38%, transparent 66%), radial-gradient(900px 600px at 100% 100%, var(--accent-tint) 0%, transparent 55%)',
+            'radial-gradient(1100px 680px at 12% 32%, var(--paper) 0%, rgba(246,241,231,0.72) 38%, transparent 66%), radial-gradient(900px 600px at 100% 100%, var(--accent-tint) 0%, transparent 55%)',
         }}
       />
 
@@ -27,7 +27,7 @@ export function Hero() {
           delay={0.85}
           className="max-w-4xl font-display text-[2.9rem] font-semibold leading-[1.02] text-[var(--ink)] sm:text-6xl lg:text-7xl"
         >
-          A CV that fits the <span className="text-[var(--accent)]">country</span>{' '}
+          A CV that fits the <span className="italic text-[var(--accent)]">country</span>{' '}
           you are applying to.
         </SplitReveal>
 
@@ -46,7 +46,7 @@ export function Hero() {
           <Magnetic strength={0.5}>
             <Link
               href="/sign-up"
-              className="group inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-7 py-4 text-base font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.25)_inset,0_16px_34px_-12px_rgba(200,73,43,0.6)] transition-colors duration-200 hover:bg-[var(--accent-ink)]"
+              className="group inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-7 py-4 text-base font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.25)_inset,0_16px_34px_-12px_rgba(46,92,70,0.6)] transition-colors duration-200 hover:bg-[var(--accent-ink)]"
             >
               Start free
               <ArrowRight

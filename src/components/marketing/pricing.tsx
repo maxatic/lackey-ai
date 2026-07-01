@@ -30,7 +30,7 @@ export function Pricing() {
 
         <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-2">
           {/* Free */}
-          <div className="reveal flex flex-col rounded-3xl border-2 border-[var(--accent)] bg-[var(--paper)] p-7 shadow-[0_24px_50px_-30px_rgba(200,73,43,0.4)] sm:p-8">
+          <div className="reveal flex flex-col rounded-3xl border-2 border-[var(--accent)] bg-[var(--paper)] p-7 shadow-[0_24px_50px_-30px_rgba(46,92,70,0.4)] sm:p-8">
             <div className="flex items-baseline justify-between">
               <h3 className="font-display text-xl font-semibold text-[var(--ink)]">
                 Free
