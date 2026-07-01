@@ -44,6 +44,10 @@ function makeQuery(_table: string) {
       filters.push([col, val]);
       return builder;
     },
+    is(col: string, val: any) {
+      filters.push([col, val]);
+      return builder;
+    },
     order() {
       const filtered = filters.length
         ? rows.filter((r) => filters.every(([col, val]) => r[col] === val))
@@ -75,6 +79,7 @@ function makeErrorQuery(_table: string) {
     select() { return builder; },
     upsert() { return builder; },
     eq() { return builder; },
+    is() { return builder; },
     order() { return Promise.resolve(result); },
     single() { return Promise.resolve(result); },
     maybeSingle() { return Promise.resolve(result); },
@@ -93,7 +98,7 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('@/lib/auth/ensure-user', () => ({ ensureUser: vi.fn(async () => {}) }));
 vi.mock('@clerk/nextjs/server', () => ({ auth: vi.fn(async () => ({ userId: 'u1' })) }));
 
-import { upsertCvDocument, getCvDocument, listCvDocuments } from './cv-documents';
+import { upsertCvDocument, getCvDocument, listCvDocuments, listCvDocumentsByJob } from './cv-documents';
 
 beforeEach(() => {
   rows = [];
@@ -141,6 +146,51 @@ describe('cv-documents db helpers', () => {
     expect(docs.every((d) => d.track_id === 'track-1')).toBe(true);
   });
 
+  it('upsertCvDocument defaults job_id to null for master CVs', async () => {
+    const doc = await upsertCvDocument({ track_id: 'track-1', locale: 'de', storage_path: 'de.pdf' });
+    expect(doc.job_id).toBeNull();
+  });
+
+  it('upsertCvDocument upserts on conflict track_id,locale,job_id (node CV distinct from master)', async () => {
+    await upsertCvDocument({ track_id: 'track-1', locale: 'de', storage_path: 'master.pdf' });
+    const node = await upsertCvDocument({ track_id: 'track-1', locale: 'de', storage_path: 'node.pdf', job_id: 'job-1' });
+    expect(node.job_id).toBe('job-1');
+    // master + node coexist: two rows for same track_id+locale, different job_id
+    expect(rows.filter((r) => r.track_id === 'track-1' && r.locale === 'de')).toHaveLength(2);
+  });
+
+  it('getCvDocument only returns the master (job_id null), not node CVs', async () => {
+    await upsertCvDocument({ track_id: 'track-1', locale: 'de', storage_path: 'master.pdf' });
+    await upsertCvDocument({ track_id: 'track-1', locale: 'de', storage_path: 'node.pdf', job_id: 'job-1' });
+    const doc = await getCvDocument('track-1', 'de');
+    expect(doc?.storage_path).toBe('master.pdf');
+  });
+
+  it('listCvDocuments(trackId) defaults to master docs only (job_id null)', async () => {
+    await upsertCvDocument({ track_id: 'track-1', locale: 'de', storage_path: 'master.pdf' });
+    await upsertCvDocument({ track_id: 'track-1', locale: 'de', storage_path: 'node.pdf', job_id: 'job-1' });
+    const docs = await listCvDocuments('track-1');
+    expect(docs).toHaveLength(1);
+    expect(docs[0].storage_path).toBe('master.pdf');
+  });
+
+  it('listCvDocuments(trackId, jobId) returns only that job\'s node CVs', async () => {
+    await upsertCvDocument({ track_id: 'track-1', locale: 'de', storage_path: 'master.pdf' });
+    await upsertCvDocument({ track_id: 'track-1', locale: 'de', storage_path: 'node.pdf', job_id: 'job-1' });
+    const docs = await listCvDocuments('track-1', 'job-1');
+    expect(docs).toHaveLength(1);
+    expect(docs[0].storage_path).toBe('node.pdf');
+  });
+
+  it('listCvDocumentsByJob returns all node CVs for a job across tracks', async () => {
+    await upsertCvDocument({ track_id: 'track-1', locale: 'de', storage_path: 'node-de.pdf', job_id: 'job-1' });
+    await upsertCvDocument({ track_id: 'track-2', locale: 'en', storage_path: 'node-en.pdf', job_id: 'job-1' });
+    await upsertCvDocument({ track_id: 'track-1', locale: 'fr', storage_path: 'other-job.pdf', job_id: 'job-2' });
+    const docs = await listCvDocumentsByJob('job-1');
+    expect(docs).toHaveLength(2);
+    expect(docs.every((d) => d.job_id === 'job-1')).toBe(true);
+  });
+
   // Non-vacuous error-path tests: these MUST fail if `if (error) throw error` is removed.
   it('upsertCvDocument throws when Supabase returns an error', async () => {
     useErrorQuery = true;
@@ -157,5 +207,10 @@ describe('cv-documents db helpers', () => {
   it('listCvDocuments throws when Supabase returns an error', async () => {
     useErrorQuery = true;
     await expect(listCvDocuments('track-1')).rejects.toThrow('boom');
+  });
+
+  it('listCvDocumentsByJob throws when Supabase returns an error', async () => {
+    useErrorQuery = true;
+    await expect(listCvDocumentsByJob('job-1')).rejects.toThrow('boom');
   });
 });

@@ -9,6 +9,7 @@ export async function upsertCvDocument(input: {
   track_id: string;
   locale: string;
   storage_path: string;
+  job_id?: string | null;
 }): Promise<CvDocument> {
   await ensureUser();
   const { userId } = await auth();
@@ -16,7 +17,10 @@ export async function upsertCvDocument(input: {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('cv_documents')
-    .upsert({ ...input, user_id: userId, updated_at: new Date().toISOString() }, { onConflict: 'track_id,locale' })
+    .upsert(
+      { ...input, job_id: input.job_id ?? null, user_id: userId, updated_at: new Date().toISOString() },
+      { onConflict: 'track_id,locale,job_id' },
+    )
     .select('*')
     .single();
   if (error) throw error;
@@ -30,18 +34,31 @@ export async function getCvDocument(trackId: string, locale: string): Promise<Cv
     .select('*')
     .eq('track_id', trackId)
     .eq('locale', locale)
+    .is('job_id', null)
     .maybeSingle();
   if (error) throw error;
   return data ?? null;
 }
 
-export async function listCvDocuments(trackId: string): Promise<CvDocument[]> {
+export async function listCvDocuments(trackId: string, jobId: string | null = null): Promise<CvDocument[]> {
+  const supabase = await createServerSupabaseClient();
+  const query = supabase
+    .from('cv_documents')
+    .select('*')
+    .eq('track_id', trackId);
+  const { data, error } = await (jobId === null ? query.is('job_id', null) : query.eq('job_id', jobId))
+    .order('locale', { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function listCvDocumentsByJob(jobId: string): Promise<CvDocument[]> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('cv_documents')
     .select('*')
-    .eq('track_id', trackId)
-    .order('locale', { ascending: true });
+    .eq('job_id', jobId)
+    .order('updated_at', { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
