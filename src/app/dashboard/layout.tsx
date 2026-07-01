@@ -8,6 +8,7 @@ const NAV = [
   { href: '/dashboard/skills', label: 'Skills' },
   { href: '/dashboard/languages', label: 'Languages' },
   { href: '/dashboard/tracks', label: 'Career Tracks' },
+  { href: '/dashboard/jobs', label: 'Jobs' },
 ] as const;
 
 export default async function DashboardLayout({
