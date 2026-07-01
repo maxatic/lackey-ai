@@ -45,8 +45,9 @@ export async function updateEntry(id: string, patch: Partial<EntryInput>): Promi
     .update(patch)
     .eq('id', id)
     .select('*')
-    .single();
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error('Entry not found');
   return data;
 }
 

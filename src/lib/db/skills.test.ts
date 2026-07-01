@@ -12,6 +12,7 @@ function makeBuilder(result: { data: unknown; error: unknown }) {
     builder[m] = vi.fn(() => builder);
   }
   builder.single = vi.fn(() => Promise.resolve(result));
+  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
   builder.then = (onF: (v: unknown) => unknown) => Promise.resolve(result).then(onF);
   return builder;
 }
@@ -78,6 +79,12 @@ describe('skills db helpers', () => {
     const b = makeBuilder({ data: null, error: { message: 'boom' } });
     fromMock.mockReturnValue(b);
     await expect(updateSkill('s1', { name: 'x' })).rejects.toThrow('boom');
+  });
+
+  it('updateSkill throws "Skill not found" for an unknown id', async () => {
+    const b = makeBuilder({ data: null, error: null });
+    fromMock.mockReturnValue(b);
+    await expect(updateSkill('missing-id', { name: 'x' })).rejects.toThrow('Skill not found');
   });
 
   it('deleteSkill throws when Supabase returns an error', async () => {

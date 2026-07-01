@@ -24,7 +24,7 @@ function makeBuilder() {
     },
     update(vals: Row) {
       state.lastUpdate = vals;
-      state.rows = [{ ...(state.rows[0] ?? { id: 'b1' }), ...vals }];
+      builder._pendingUpdate = vals;
       return builder;
     },
     upsert(vals: Row[]) {
@@ -36,6 +36,11 @@ function makeBuilder() {
     },
     eq(col: string, val: unknown) {
       state.lastFilters[col] = val;
+      if (builder._pendingUpdate) {
+        const existing = state.rows.find((r) => r.id === val);
+        state.rows = existing ? [{ ...existing, ...builder._pendingUpdate }] : [];
+        builder._pendingUpdate = undefined;
+      }
       return builder;
     },
     order() {
@@ -47,6 +52,9 @@ function makeBuilder() {
     },
     single() {
       return Promise.resolve({ data: state.rows[0], error: null });
+    },
+    maybeSingle() {
+      return Promise.resolve({ data: state.rows[0] ?? null, error: null });
     },
     // Make builder thenable so await on it (e.g. delete().eq()) resolves to { data, error }
     then(resolve: (v: { data: null; error: null }) => void) {
@@ -115,6 +123,11 @@ describe('bullets db helpers', () => {
     expect(state.lastUpdate).toMatchObject({ text: 'new', tags: ['k'] });
     expect(state.lastFilters.id).toBe('b1');
     expect(row.text).toBe('new');
+  });
+
+  it('updateBullet throws "Bullet not found" for an unknown id', async () => {
+    state.rows = [{ id: 'b1', text: 'old', tags: [], sort_order: 0 }];
+    await expect(updateBullet('missing-id', { text: 'new' })).rejects.toThrow('Bullet not found');
   });
 
   it('deleteBullet deletes by id', async () => {

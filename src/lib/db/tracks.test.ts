@@ -53,6 +53,7 @@ function makeQuery(_table: string) {
       return Promise.resolve({ data: null, error: null }).then(onFulfilled);
     },
     single() { return Promise.resolve({ data: pending![0], error: null }); },
+    maybeSingle() { return Promise.resolve({ data: pending?.[0] ?? null, error: null }); },
   };
   return builder;
 }
@@ -73,6 +74,7 @@ function makeErrorQuery(_table: string) {
       return Promise.resolve(result).then(onFulfilled);
     },
     single() { return Promise.resolve(result); },
+    maybeSingle() { return Promise.resolve(result); },
   };
   return builder;
 }
@@ -142,6 +144,10 @@ describe('tracks db helpers', () => {
   it('updateTrack throws when Supabase returns an error', async () => {
     useErrorQuery = true;
     await expect(updateTrack('any-id', { name: 'X' })).rejects.toThrow('boom');
+  });
+
+  it('updateTrack throws "Track not found" for an unknown id', async () => {
+    await expect(updateTrack('missing-id', { name: 'X' })).rejects.toThrow('Track not found');
   });
 
   it('deleteTrack throws when Supabase returns an error', async () => {

@@ -52,8 +52,9 @@ export async function updateBullet(
     .update(patch)
     .eq('id', id)
     .select('*')
-    .single();
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error('Bullet not found');
   return data;
 }
 

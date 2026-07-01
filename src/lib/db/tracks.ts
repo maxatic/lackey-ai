@@ -42,8 +42,9 @@ export async function updateTrack(id: string, patch: Partial<TrackInput>): Promi
     .update(patch)
     .eq('id', id)
     .select('*')
-    .single();
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error('Track not found');
   return data;
 }
 

@@ -25,6 +25,10 @@ chain['single'] = (...args: unknown[]) => {
   calls.push(['single', args]);
   return Promise.resolve(result);
 };
+chain['maybeSingle'] = (...args: unknown[]) => {
+  calls.push(['maybeSingle', args]);
+  return Promise.resolve(result);
+};
 
 // Plain client — no .then, so await won't unwrap it into chain.
 const client = {
@@ -113,6 +117,11 @@ describe('updateEntry', () => {
   it('throws when supabase returns an error', async () => {
     result.error = { message: 'update-fail' };
     await expect(updateEntry('e3', { title: 'x' })).rejects.toThrow('update-fail');
+  });
+
+  it('updateEntry throws "Entry not found" for an unknown id', async () => {
+    result.data = null;
+    await expect(updateEntry('missing-id', { title: 'X' })).rejects.toThrow('Entry not found');
   });
 });
 

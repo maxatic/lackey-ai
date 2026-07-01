@@ -40,8 +40,9 @@ export async function updateSkill(id: string, patch: Partial<SkillInput>): Promi
     .update(patch)
     .eq('id', id)
     .select('*')
-    .single();
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error('Skill not found');
   return data;
 }
 

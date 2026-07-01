@@ -11,6 +11,7 @@ function makeBuilder(result: { data: unknown; error: unknown }) {
     builder[m] = vi.fn(() => builder);
   }
   builder.single = vi.fn(() => Promise.resolve(result));
+  builder.maybeSingle = vi.fn(() => Promise.resolve(result));
   builder.then = (onF: (v: unknown) => unknown) => Promise.resolve(result).then(onF);
   return builder;
 }
@@ -84,6 +85,12 @@ describe('languages db helpers', () => {
     const b = makeBuilder({ data: null, error: { message: 'boom' } });
     fromMock.mockReturnValue(b);
     await expect(updateLanguage('l1', { cefr_level: 'C1' })).rejects.toThrow('boom');
+  });
+
+  it('updateLanguage throws "Language not found" for an unknown id', async () => {
+    const b = makeBuilder({ data: null, error: null });
+    fromMock.mockReturnValue(b);
+    await expect(updateLanguage('missing-id', { cefr_level: 'C1' })).rejects.toThrow('Language not found');
   });
 
   it('deleteLanguage throws when Supabase returns an error', async () => {
