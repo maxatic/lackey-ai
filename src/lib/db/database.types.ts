@@ -238,9 +238,21 @@ export type Database = {
         Relationships: [];
       };
       cv_documents: {
-        Row: { id: string; user_id: string; track_id: string; locale: string; storage_path: string; created_at: string; updated_at: string };
-        Insert: { id?: string; user_id: string; track_id: string; locale: string; storage_path: string; created_at?: string; updated_at?: string };
-        Update: { id?: string; user_id?: string; track_id?: string; locale?: string; storage_path?: string; created_at?: string; updated_at?: string };
+        Row: { id: string; user_id: string; track_id: string; locale: string; storage_path: string; job_id: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; user_id: string; track_id: string; locale: string; storage_path: string; job_id?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; user_id?: string; track_id?: string; locale?: string; storage_path?: string; job_id?: string | null; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      job_descriptions: {
+        Row: { id: string; user_id: string; title: string; company: string | null; raw_text: string; parsed: Json; created_at: string; updated_at: string };
+        Insert: { id?: string; user_id: string; title: string; company?: string | null; raw_text: string; parsed?: Json; created_at?: string; updated_at?: string };
+        Update: { id?: string; user_id?: string; title?: string; company?: string | null; raw_text?: string; parsed?: Json; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
+      node_cvs: {
+        Row: { id: string; user_id: string; job_id: string; track_id: string; overrides: Json; created_at: string; updated_at: string };
+        Insert: { id?: string; user_id: string; job_id: string; track_id: string; overrides?: Json; created_at?: string; updated_at?: string };
+        Update: { id?: string; user_id?: string; job_id?: string; track_id?: string; overrides?: Json; created_at?: string; updated_at?: string };
         Relationships: [];
       };
     };
