@@ -15,9 +15,14 @@ function reorder<T extends { id: string }>(items: T[], order?: string[], exclude
   const kept = items.filter((i) => !excluded.has(i.id));
   if (!order?.length) return kept;
   const byId = new Map(kept.map((i) => [i.id, i]));
-  const ordered = order.map((id) => byId.get(id)).filter((i): i is T => !!i);
-  const placed = new Set(ordered.map((i) => i.id));
-  return [...ordered, ...kept.filter((i) => !placed.has(i.id))];
+  const ordered = order
+    .map((id) => {
+      const item = byId.get(id);
+      byId.delete(id); // dedupe: each id places an item at most once
+      return item;
+    })
+    .filter((i): i is T => !!i);
+  return [...ordered, ...kept.filter((i) => byId.has(i.id))];
 }
 
 export function applyOverrides(snapshot: TrackSnapshot, overrides: CvOverrides): TrackSnapshot {

@@ -57,6 +57,11 @@ describe('applyOverrides', () => {
     expect(out.profile.headline).toBe('new headline');
   });
 
+  it('duplicate ids in order arrays do not duplicate items', () => {
+    const out = applyOverrides(snap(), { entry_order: ['e1', 'e1'] });
+    expect(out.entries.map((e) => e.id)).toEqual(['e1', 'e2', 'e3']);
+  });
+
   it('orders and excludes skills', () => {
     const out = applyOverrides(snap(), { skill_order: ['s2'], skill_exclude: [] });
     expect(out.skills.map((s) => s.id)).toEqual(['s2', 's1']);
