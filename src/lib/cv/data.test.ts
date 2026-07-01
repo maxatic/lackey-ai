@@ -23,7 +23,7 @@ vi.mock('@/lib/db/curation', () => ({
   getTrackSkillIds: vi.fn(),
 }));
 
-import { getCvData } from './data';
+import { getCvData, buildTrackSnapshot, toCvData } from './data';
 import { getTrack } from '@/lib/db/tracks';
 import { listEntries } from '@/lib/db/entries';
 import { listBullets } from '@/lib/db/bullets';
@@ -166,5 +166,18 @@ describe('getCvData', () => {
   it('maps track fields', async () => {
     const data = await getCvData('t1', 'uk');
     expect(data.track).toEqual({ name: 'Software Engineer', target_title: 'Senior SWE', summary: 'Track summary' });
+  });
+
+  it('buildTrackSnapshot carries entry, bullet and skill ids', async () => {
+    const snap = await buildTrackSnapshot('track-1');
+    expect(snap.entries[0].id).toBeDefined();
+    expect(snap.entries[0].bullets[0]).toEqual({ id: expect.any(String), text: expect.any(String) });
+    expect(snap.skills[0].id).toBeDefined();
+  });
+
+  it('toCvData(buildTrackSnapshot(...)) equals getCvData(...)', async () => {
+    const viaSnapshot = toCvData(await buildTrackSnapshot('track-1'), 'uk');
+    const direct = await getCvData('track-1', 'uk');
+    expect(viaSnapshot).toEqual(direct);
   });
 });
