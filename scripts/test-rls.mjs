@@ -65,7 +65,16 @@ try {
     [SUB_A, trackId, skillId]
   );
 
-  console.log('Setup: user A rows inserted into all 8 data tables + users.');
+  const { rows: [{ id: jobId }] } = await client.query(
+    "insert into job_descriptions (user_id, title, raw_text) values ($1, 'RLS test', 'x') returning id",
+    [SUB_A]
+  );
+  await client.query(
+    'insert into node_cvs (user_id, job_id, track_id) values ($1, $2, $3)',
+    [SUB_A, jobId, trackId]
+  );
+
+  console.log('Setup: user A rows inserted into all 10 data tables + users.');
 
   // ── Switch to user B ───────────────────────────────────────────────────────
   await client.query("select set_config('request.jwt.claims', $1, true)", [
@@ -82,6 +91,8 @@ try {
     { table: 'career_tracks',    where: `name = 'PM'` },
     { table: 'track_entries',    where: `track_id = '${trackId}'` },
     { table: 'track_skills',     where: `track_id = '${trackId}'` },
+    { table: 'job_descriptions', where: `title = 'RLS test'` },
+    { table: 'node_cvs',         where: `job_id = '${jobId}'` },
   ];
 
   for (const { table, where } of isolationChecks) {
