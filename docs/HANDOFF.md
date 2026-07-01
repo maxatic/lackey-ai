@@ -1,13 +1,24 @@
 # Lackey AI — Handoff
 
-**As of:** 2026-06-30 (Phase 2 CV Engine built, reviewed & **pushed to prod**; Phase 1 + landing already verified live)
-**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` @ `c20c52a` — pushed; origin in sync
+**As of:** 2026-07-02 (Phase 3 Node CV built, reviewed & merged to `main` — **push pending**; Phases 0–2 live in prod)
+**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` — 16 commits ahead of origin, **run `git push` to deploy**
 
-> ## ▶ RESUME HERE (next session — likely from the Windows 11 PC)
-> **All code is committed & pushed — `git pull` on the Windows box to sync.** Phase 2 (CV Engine) is done and live in prod. **The one remaining task is an ops step: deploy the Fly.io compile service + set 2 env vars**, after which "Generate CV" produces real PDFs. Until then the button shows a clean `Missing COMPILE_SERVICE_URL` error and nothing else is affected. Full step-by-step is in **[Awaiting / next steps](#-awaiting--next-steps)** below and `compile-service/README.md`.
->
-> **Why the switch to Windows:** the local Docker smoke test failed on the Mac with `rosetta error: failed to open elf …ld-linux-x86-64.so.2` — purely an **Apple-Silicon emulation** issue (the image pins the **x86_64** Tectonic binary). On **Windows 11 (amd64)** the image runs natively, matching Fly. **You may not even need local Docker:** `fly deploy` builds the image remotely on Fly's amd64 builders, so you can deploy straight from any machine with `flyctl` + a Fly account. The local Docker test (Step 0) is optional verification only.
-**Live:** https://lackey-ai-main.vercel.app (Vercel project **`lackey-ai-main`**, auto-deploys on push to `main`). Dashboard + all 5 Skeleton sections render correctly in prod. **CV-engine UI is live but "Generate CV" needs the Fly compile service + 2 env vars (ops step below) before it produces PDFs.**
+> ## ▶ RESUME HERE
+> **Phase 3 (Node CV) is done and merged to local `main`** — paste a JD → AI-parsed Job → pick a Track → AI suggests a tailoring diff (reorder/exclude/reword, grounded in the Skeleton) → accept/reject per card → tailored CV through the existing render pipeline. 147/147 tests, final review verdict SHIP. Migration `0004` is already applied to the live DB.
+> **Before/at push:** (1) `git push` (triggers Vercel prod deploy); (2) add `ANTHROPIC_API_KEY` to Vercel env (`lackey-ai-main`) — without it the Jobs pages render but "Add job"/"Suggest tailoring" show a clean config error; (3) the Fly compile-service ops step below still gates ALL PDF output (master + node CVs alike).
+> **Post-deploy smoke (once Fly is up):** generate one **master** CV twice on a track page — verifies the new `NULLS NOT DISTINCT` upsert constraint against the live DB (reviewed sound; not yet exercised live).
+**Live:** https://lackey-ai-main.vercel.app (Vercel project **`lackey-ai-main`**, auto-deploys on push to `main`). **CV-engine + Jobs UI ship on next push; PDFs need the Fly compile service; AI features need ANTHROPIC_API_KEY in Vercel.**
+
+## ✅ Done — Phase 3 (Node CV) — built, reviewed, merged (2026-07-01/02)
+
+Built via subagent-driven development (fresh implementer + reviewer per task, 10 tasks, final whole-branch review = SHIP). Branch `feat/phase-3-node-cv` (12 commits `2373785..8f56b9e`) fast-forward-merged to `main`. [Spec](superpowers/specs/2026-07-01-node-cv-design.md) · [plan](superpowers/plans/2026-07-01-node-cv.md) · full trail in `.superpowers/sdd/progress.md`.
+
+- **JD ingestion (shared module):** paste text → `parseJd` (Anthropic structured output, 20k-char cap) → `job_descriptions` row; title/company inline-editable; delete cascades. Phases 4/5 reuse this.
+- **Tailoring:** `suggestCvDiff(parsedJd, snapshot)` → structural anti-fabrication diff (reorder/exclude entries & skills, bullet/summary/headline rewrites, every rewrite references an existing bullet id; unknown ids filtered at the trust boundary). Review UI: accept/reject cards, default accepted → accepted set persisted as `node_cvs.overrides` jsonb → `applyOverrides` (pure, stale-id-safe, dedup) → existing UK/DE renderers → Fly compile → `cvs` bucket path `<sub>/<track>-<locale>-<job>.pdf` (with `job_id` on `cv_documents`).
+- **AI layer:** `src/lib/ai/client.ts` — `claude-opus-4-8`, forced tool use + strict schemas, retry only on schema-invalid output; `Missing ANTHROPIC_API_KEY` clean error. All AI mocked in tests.
+- **Refactor:** `getCvData` split into id-carrying `buildTrackSnapshot` + `toCvData` (renderers untouched, output byte-identical). **Hardening:** all db `update*()` helpers now throw explicit `<Entity> not found` instead of opaque 500s (deferred Phase-1 item). `db-verify` table count fixed (was stale at 9; now 12).
+- **DB:** migration `0004` (applied live): `job_descriptions` + `node_cvs` + RLS; `cv_documents.job_id` with `unique nulls not distinct (track_id, locale, job_id)` replacing `unique (track_id, locale)` (partial indexes would break PostgREST upserts). `test:rls` covers the new tables.
+- **Deferred (final-review triage, all Minor):** map raw AI/db error messages to an allowlist before Phase 4 reuses the pattern; `getJob` ownership check in `generateNodeCvAction` (FK accepts foreign job UUIDs — no read leak, revisit in Phase 5); `getNodeCv` currently unused (Phase 4/5 will want it); test-hygiene sweep for `beforeEach` implicit returns.
 
 Lackey AI — an AI companion for the EU job-seeking journey (structured profile → locale-correct tailored CVs & cover letters, job tracking, interview prep). See [CLAUDE.md](../CLAUDE.md) for vision, stack, and the full phased roadmap.
 
