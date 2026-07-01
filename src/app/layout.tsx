@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs';
+import { ClerkProvider } from '@clerk/nextjs';
+import { AuthHeader } from '@/components/auth-header';
 import { PostHogProvider } from '@/components/posthog-provider';
 import './globals.css';
 
@@ -25,15 +19,7 @@ export default function RootLayout({
       <body>
         <ClerkProvider>
           <PostHogProvider>
-            <header data-app-header className="flex justify-end items-center gap-4 p-4 h-16">
-              <SignedOut>
-                <SignInButton />
-                <SignUpButton />
-              </SignedOut>
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
-            </header>
+            <AuthHeader />
             {children}
           </PostHogProvider>
         </ClerkProvider>
