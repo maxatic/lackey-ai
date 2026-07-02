@@ -15,3 +15,4 @@ export * from './tracks';    // Task 6
 export * from './curation'; // Task 7
 export * from './jobs';     // Phase 3
 export * from './node-cvs'; // Phase 3
+export * from './cover-letters'; // Phase 4
