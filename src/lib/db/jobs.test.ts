@@ -15,7 +15,7 @@ function makeQuery(_table: string) {
   let pending: any[] | null = null; // rows staged by insert for select().single()
   let pendingPatch: any | null = null; // patch staged by update(), applied at a terminal
   let isDelete = false;
-  let filters: { col: string; val: any }[] = [];
+  const filters: { col: string; val: any }[] = [];
   const matches = (r: any) => filters.every((f) => r[f.col] === f.val);
   const applyPending = () => {
     if (pendingPatch !== null) {
