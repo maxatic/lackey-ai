@@ -10,6 +10,7 @@ import type { LetterPoint } from '@/lib/letter/types';
 import { TailorCv } from './TailorCv';
 import { CoverLetter } from './CoverLetter';
 import { JobHeader } from './JobHeader';
+import { TrackerCard } from './TrackerCard';
 
 export default async function JobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -31,6 +32,8 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
       </div>
 
       <JobHeader jobId={job.id} title={job.title} company={job.company} />
+
+      <TrackerCard jobId={job.id} status={job.status} appliedAt={job.applied_at} notes={job.notes} />
 
       {parsed && (
         <section className="app-card p-5">
