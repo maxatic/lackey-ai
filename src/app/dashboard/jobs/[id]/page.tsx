@@ -4,8 +4,11 @@ import { ArrowLeft } from '@phosphor-icons/react/dist/ssr';
 import { getJob } from '@/lib/db/jobs';
 import { listTracks } from '@/lib/db/tracks';
 import { listCvDocumentsByJob } from '@/lib/db/cv-documents';
+import { listCoverLettersByJob } from '@/lib/db/cover-letters';
 import { validateParsedJd } from '@/lib/jd/parse';
+import type { LetterPoint } from '@/lib/letter/types';
 import { TailorCv } from './TailorCv';
+import { CoverLetter } from './CoverLetter';
 import { JobHeader } from './JobHeader';
 
 export default async function JobPage({ params }: { params: Promise<{ id: string }> }) {
@@ -13,7 +16,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
   const job = await getJob(id);
   if (!job) notFound();
   const parsed = validateParsedJd(job.parsed);
-  const [tracks, existingDocs] = await Promise.all([listTracks(), listCvDocumentsByJob(id)]);
+  const [tracks, existingDocs, letters] = await Promise.all([listTracks(), listCvDocumentsByJob(id), listCoverLettersByJob(id)]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -61,11 +64,30 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
           .
         </div>
       ) : (
-        <TailorCv
-          jobId={job.id}
-          tracks={tracks.map((t) => ({ id: t.id, name: t.name }))}
-          existingDocs={existingDocs.map((d) => ({ locale: d.locale, track_id: d.track_id, storage_path: d.storage_path, updated_at: d.updated_at }))}
-        />
+        <>
+          <TailorCv
+            jobId={job.id}
+            tracks={tracks.map((t) => ({ id: t.id, name: t.name }))}
+            existingDocs={existingDocs.map((d) => ({ locale: d.locale, track_id: d.track_id, storage_path: d.storage_path, updated_at: d.updated_at }))}
+          />
+          <CoverLetter
+            jobId={job.id}
+            tracks={tracks.map((t) => ({ id: t.id, name: t.name }))}
+            existingLetters={letters.map((l) => ({
+              track_id: l.track_id,
+              points: Array.isArray(l.points)
+                ? (l.points as unknown[]).filter(
+                    (p): p is LetterPoint =>
+                      !!p && typeof p === 'object' &&
+                      typeof (p as { entry_id?: unknown }).entry_id === 'string' &&
+                      typeof (p as { text?: unknown }).text === 'string' &&
+                      typeof (p as { reason?: unknown }).reason === 'string',
+                  )
+                : [],
+              body: l.body,
+            }))}
+          />
+        </>
       )}
     </div>
   );

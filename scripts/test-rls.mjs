@@ -73,8 +73,12 @@ try {
     'insert into node_cvs (user_id, job_id, track_id) values ($1, $2, $3)',
     [SUB_A, jobId, trackId]
   );
+  await client.query(
+    'insert into cover_letters (user_id, job_id, track_id, body) values ($1, $2, $3, $4)',
+    [SUB_A, jobId, trackId, 'letter A']
+  );
 
-  console.log('Setup: user A rows inserted into all 10 data tables + users.');
+  console.log('Setup: user A rows inserted into all 11 data tables + users.');
 
   // ── Switch to user B ───────────────────────────────────────────────────────
   await client.query("select set_config('request.jwt.claims', $1, true)", [
@@ -93,6 +97,7 @@ try {
     { table: 'track_skills',     where: `track_id = '${trackId}'` },
     { table: 'job_descriptions', where: `title = 'RLS test'` },
     { table: 'node_cvs',         where: `job_id = '${jobId}'` },
+    { table: 'cover_letters',    where: `job_id = '${jobId}'` },
   ];
 
   for (const { table, where } of isolationChecks) {
