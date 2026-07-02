@@ -1,13 +1,23 @@
 # Lackey AI — Handoff
 
-**As of:** 2026-07-02 (Phase 3 Node CV built, reviewed & merged to `main` — **push pending**; Phases 0–2 live in prod)
-**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` — 16 commits ahead of origin, **run `git push` to deploy**
+**As of:** 2026-07-02 (Phase 4 Cover Letter merged — **the MVP line, phases 0–4, is code-complete**; Phases 0–3 + design refresh pushed & live)
+**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` — 9 commits ahead of origin (Phase 4 + docs), **run `git push` to deploy**
 
 > ## ▶ RESUME HERE
-> **Phase 3 (Node CV) is done and merged to local `main`** — paste a JD → AI-parsed Job → pick a Track → AI suggests a tailoring diff (reorder/exclude/reword, grounded in the Skeleton) → accept/reject per card → tailored CV through the existing render pipeline. 147/147 tests, final review verdict SHIP. Migration `0004` is already applied to the live DB.
-> **Before/at push:** (1) `git push` (triggers Vercel prod deploy); (2) add `ANTHROPIC_API_KEY` to Vercel env (`lackey-ai-main`) — without it the Jobs pages render but "Add job"/"Suggest tailoring" show a clean config error; (3) the Fly compile-service ops step below still gates ALL PDF output (master + node CVs alike).
-> **Post-deploy smoke (once Fly is up):** generate one **master** CV twice on a track page — verifies the new `NULLS NOT DISTINCT` upsert constraint against the live DB (reviewed sound; not yet exercised live).
-**Live:** https://lackey-ai-main.vercel.app (Vercel project **`lackey-ai-main`**, auto-deploys on push to `main`). **CV-engine + Jobs UI ship on next push; PDFs need the Fly compile service; AI features need ANTHROPIC_API_KEY in Vercel.**
+> **Phase 4 (Cover Letter) is done and merged to local `main` — MVP complete.** On a Job page: pick a Track → AI proposes Skeleton-grounded talking points → accept/reject → AI writes an English letter from only the accepted points → edit in a textarea → Save (persists per job+track) + Copy. 164/164 tests, final review SHIP. Migration `0005` applied to the live DB. Also shipped: the `toActionError` allowlist (server actions no longer leak raw db/AI errors).
+> **To deploy:** `git push`. **Ops still pending:** (1) `ANTHROPIC_API_KEY` in Vercel env — gates ALL AI features in prod (parse, tailor, letters); (2) Fly compile-service deploy — gates PDF output only (letters are text, they work without it).
+> **Post-deploy smoke (once Fly is up):** generate one **master** CV twice on a track page — exercises the `NULLS NOT DISTINCT` upsert constraint live.
+> **Next phase per roadmap:** Phase 5 (Job Tracker) — pipeline table, auto-seeds when a CV/letter is generated for a JD. Jobs + node_cvs + cover_letters give it everything it needs.
+**Live:** https://lackey-ai-main.vercel.app (Vercel project **`lackey-ai-main`**, auto-deploys on push to `main`).
+
+## ✅ Done — Phase 4 (Cover Letter) — built, reviewed, merged (2026-07-02) → MVP line complete
+
+Subagent-driven build (6 tasks, per-task reviews + final whole-branch review = SHIP). Branch `feat/phase-4-cover-letter` (`89b6209..ff9e0a0`) merged to `main`. [Spec](superpowers/specs/2026-07-02-cover-letter-design.md) · [plan](superpowers/plans/2026-07-02-cover-letter.md) · trail in `.superpowers/sdd/progress.md`.
+
+- **Flow:** `suggestPoints` (talking points, each grounded in a Skeleton entry id; unknown ids filtered) → accept/reject cards → `writeLetter` (English, 250–350 words, plain text, ONLY accepted points as factual claims) → editable textarea → `cover_letters` upsert per `unique(job_id, track_id)` + RLS.
+- **Security retrofit:** `src/lib/action-error.ts` exact-match allowlist; `createJobAction`/`updateJobAction`/`suggestTailoringAction` no longer pass raw `err.message` to the client (closed the deferred Phase-3 finding; all 24 throw sites byte-verified against the list).
+- **No Fly dependency** — letters are text. Live AI needs only `ANTHROPIC_API_KEY`.
+- **Deferred (final-review triage, all cosmetic):** `copy()` lacks clipboard-rejection catch; track switch drops unsaved edits without confirm; export the `isPoint` guard from `letter/points.ts` instead of the inline copy in `jobs/[id]/page.tsx`; invalid pointsJson surfaces as the no-points message; shared `isPending` mislabels Suggest/Generate buttons during concurrent use.
 
 ## ✅ Done — Phase 3 (Node CV) — built, reviewed, merged (2026-07-01/02)
 
