@@ -2,7 +2,7 @@
 import { revalidatePath } from 'next/cache';
 import { auth } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { getJob } from '@/lib/db/jobs';
+import { getJob, advanceJobToPrepared } from '@/lib/db/jobs';
 import { buildTrackSnapshot, toCvData, type TrackSnapshot } from '@/lib/cv/data';
 import { suggestCvDiff, type CvSuggestions } from '@/lib/cv/suggest';
 import { applyOverrides, validateOverrides } from '@/lib/cv/overrides';
@@ -59,6 +59,8 @@ export async function generateNodeCvAction(formData: FormData): Promise<{ url: s
   if (upError) throw upError;
 
   await upsertCvDocument({ track_id: trackId, locale, storage_path: path, job_id: jobId });
+
+  try { await advanceJobToPrepared(jobId); } catch { /* best-effort — never fail a succeeded generation */ }
 
   const { data: signed, error: signError } = await supabase.storage
     .from('cvs')

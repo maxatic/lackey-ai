@@ -3,9 +3,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mocks = {
   getJob: vi.fn(), buildTrackSnapshot: vi.fn(), suggestPoints: vi.fn(),
-  writeLetter: vi.fn(), upsertCoverLetter: vi.fn(),
+  writeLetter: vi.fn(), upsertCoverLetter: vi.fn(), advanceJobToPrepared: vi.fn(),
 };
-vi.mock('@/lib/db/jobs', () => ({ getJob: (...a: any[]) => mocks.getJob(...a) }));
+vi.mock('@/lib/db/jobs', () => ({
+  getJob: (...a: any[]) => mocks.getJob(...a),
+  advanceJobToPrepared: (...a: any[]) => mocks.advanceJobToPrepared(...a),
+}));
 vi.mock('@/lib/cv/data', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   buildTrackSnapshot: (...a: any[]) => mocks.buildTrackSnapshot(...a),
@@ -72,5 +75,20 @@ describe('letter actions', () => {
     mocks.upsertCoverLetter.mockResolvedValue({});
     await expect(saveCoverLetterAction('j1', 't1', JSON.stringify([POINT]), 'my letter')).resolves.toEqual({ ok: true });
     expect(mocks.upsertCoverLetter).toHaveBeenCalledWith({ job_id: 'j1', track_id: 't1', points: [POINT], body: 'my letter' });
+  });
+
+  it('saveCoverLetterAction advances the job to prepared on success', async () => {
+    mocks.buildTrackSnapshot.mockResolvedValue(SNAP);
+    mocks.upsertCoverLetter.mockResolvedValue({});
+    mocks.advanceJobToPrepared.mockResolvedValue(undefined);
+    await saveCoverLetterAction('j1', 't1', JSON.stringify([POINT]), 'my letter');
+    expect(mocks.advanceJobToPrepared).toHaveBeenCalledWith('j1');
+  });
+
+  it('saveCoverLetterAction still succeeds when the status bump fails', async () => {
+    mocks.buildTrackSnapshot.mockResolvedValue(SNAP);
+    mocks.upsertCoverLetter.mockResolvedValue({});
+    mocks.advanceJobToPrepared.mockRejectedValue(new Error('db down'));
+    await expect(saveCoverLetterAction('j1', 't1', JSON.stringify([POINT]), 'my letter')).resolves.toEqual({ ok: true });
   });
 });

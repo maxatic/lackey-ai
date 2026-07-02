@@ -1,6 +1,6 @@
 'use server';
 import { revalidatePath } from 'next/cache';
-import { getJob } from '@/lib/db/jobs';
+import { getJob, advanceJobToPrepared } from '@/lib/db/jobs';
 import { validateParsedJd } from '@/lib/jd/parse';
 import { buildTrackSnapshot } from '@/lib/cv/data';
 import { suggestPoints, sanitizeLetterPoints } from '@/lib/letter/points';
@@ -66,6 +66,7 @@ export async function saveCoverLetterAction(
     try { raw = JSON.parse(pointsJson); } catch { /* [] */ }
     const points = sanitizeLetterPoints(raw, snapshot);
     await upsertCoverLetter({ job_id: jobId, track_id: trackId, points, body });
+    try { await advanceJobToPrepared(jobId); } catch { /* best-effort — never fail a succeeded save */ }
     revalidatePath(`/dashboard/jobs/${jobId}`);
     return { ok: true };
   } catch (err) {

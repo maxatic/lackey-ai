@@ -16,6 +16,8 @@ const SAFE_MESSAGES = new Set([
   'Missing job or track',
   'Invalid locale',
   'No talking points selected — accept at least one point',
+  'Invalid status',
+  'Notes are too long (max 5,000 characters)',
 ]);
 
 export const GENERIC_ACTION_ERROR = 'Something went wrong — please try again';

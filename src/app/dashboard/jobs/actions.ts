@@ -2,7 +2,8 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { parseJd } from '@/lib/jd/parse';
-import { createJob, deleteJob, updateJob } from '@/lib/db/jobs';
+import { createJob, deleteJob, updateJob, updateJobStatus } from '@/lib/db/jobs';
+import { isJobStatus } from '@/lib/db/job-status';
 import { toActionError } from '@/lib/action-error';
 
 export async function createJobAction(formData: FormData): Promise<{ error: string }> {
@@ -27,6 +28,29 @@ export async function createJobAction(formData: FormData): Promise<{ error: stri
 export async function updateJobAction(id: string, patch: { title?: string; company?: string | null }): Promise<{ error?: string }> {
   try {
     await updateJob(id, patch);
+  } catch (err) {
+    return { error: toActionError(err) };
+  }
+  revalidatePath(`/dashboard/jobs/${id}`);
+  return {};
+}
+
+export async function updateJobStatusAction(id: string, status: string): Promise<{ error?: string }> {
+  try {
+    if (!isJobStatus(status)) throw new Error('Invalid status');
+    await updateJobStatus(id, status);
+  } catch (err) {
+    return { error: toActionError(err) };
+  }
+  revalidatePath('/dashboard/jobs');
+  revalidatePath(`/dashboard/jobs/${id}`);
+  return {};
+}
+
+export async function updateJobNotesAction(id: string, notes: string): Promise<{ error?: string }> {
+  try {
+    if (notes.length > 5000) throw new Error('Notes are too long (max 5,000 characters)');
+    await updateJob(id, { notes });
   } catch (err) {
     return { error: toActionError(err) };
   }

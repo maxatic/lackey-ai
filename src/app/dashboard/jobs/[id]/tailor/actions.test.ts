@@ -5,8 +5,12 @@ const mocks = {
   getJob: vi.fn(), buildTrackSnapshot: vi.fn(), suggestCvDiff: vi.fn(),
   upsertNodeCv: vi.fn(), upsertCvDocument: vi.fn(), compilePdf: vi.fn(),
   renderCv: vi.fn(), upload: vi.fn(), createSignedUrl: vi.fn(),
+  advanceJobToPrepared: vi.fn(),
 };
-vi.mock('@/lib/db/jobs', () => ({ getJob: (...a: any[]) => mocks.getJob(...a) }));
+vi.mock('@/lib/db/jobs', () => ({
+  getJob: (...a: any[]) => mocks.getJob(...a),
+  advanceJobToPrepared: (...a: any[]) => mocks.advanceJobToPrepared(...a),
+}));
 vi.mock('@/lib/cv/data', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   buildTrackSnapshot: (...a: any[]) => mocks.buildTrackSnapshot(...a),
@@ -64,6 +68,32 @@ describe('tailor actions', () => {
     expect(mocks.upsertNodeCv).toHaveBeenCalledWith(expect.objectContaining({ job_id: 'j1', track_id: 't1' }));
     expect(mocks.upload).toHaveBeenCalledWith('user_1/t1-uk-j1.pdf', expect.anything(), expect.anything());
     expect(mocks.upsertCvDocument).toHaveBeenCalledWith(expect.objectContaining({ job_id: 'j1' }));
+  });
+
+  const happyPathFd = () => {
+    mocks.buildTrackSnapshot.mockResolvedValue(SNAP);
+    mocks.renderCv.mockReturnValue('\\tex');
+    mocks.compilePdf.mockResolvedValue(Buffer.from('%PDF'));
+    mocks.upload.mockResolvedValue({ error: null });
+    mocks.upsertCvDocument.mockResolvedValue({});
+    mocks.createSignedUrl.mockResolvedValue({ data: { signedUrl: 'https://signed' }, error: null });
+    const fd = new FormData();
+    fd.set('job_id', 'j1'); fd.set('track_id', 't1'); fd.set('locale', 'uk'); fd.set('overrides', '{}');
+    return fd;
+  };
+
+  it('generateNodeCvAction advances the job to prepared on success', async () => {
+    const fd = happyPathFd();
+    mocks.advanceJobToPrepared.mockResolvedValue(undefined);
+    await generateNodeCvAction(fd);
+    expect(mocks.advanceJobToPrepared).toHaveBeenCalledWith('j1');
+  });
+
+  it('generateNodeCvAction still succeeds when the status bump fails', async () => {
+    const fd = happyPathFd();
+    mocks.advanceJobToPrepared.mockRejectedValue(new Error('db down'));
+    const { url } = await generateNodeCvAction(fd);
+    expect(url).toBe('https://signed');
   });
 
   it('generateNodeCvAction rejects an invalid locale', async () => {
