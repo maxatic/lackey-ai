@@ -15,9 +15,16 @@ let nextId = 1;
 function makeQuery(_table: string) {
   let pending: any[] | null = null;    // rows staged by upsert for select().single()
   let filters: Array<[string, any]> = []; // accumulated eq() filters
+  let notNullCol: string | null = null; // .not(col, 'is', null) filter
 
   const builder: any = {
     select() { return builder; },
+    not(col: string) { notNullCol = col; return builder; },
+    // awaited chains without a terminal (select().not()) resolve here:
+    then(onFulfilled: (v: any) => any) {
+      const data = rows.filter((r) => notNullCol === null || r[notNullCol] !== null);
+      return Promise.resolve({ data, error: null }).then(onFulfilled);
+    },
     upsert(values: any, opts: { onConflict?: string } = {}) {
       if (opts.onConflict) {
         // upsert: find existing row by conflict key columns, update or insert
@@ -98,7 +105,13 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('@/lib/auth/ensure-user', () => ({ ensureUser: vi.fn(async () => {}) }));
 vi.mock('@clerk/nextjs/server', () => ({ auth: vi.fn(async () => ({ userId: 'u1' })) }));
 
-import { upsertCvDocument, getCvDocument, listCvDocuments, listCvDocumentsByJob } from './cv-documents';
+import {
+  upsertCvDocument,
+  getCvDocument,
+  listCvDocuments,
+  listCvDocumentsByJob,
+  listCvDocumentJobIds,
+} from './cv-documents';
 
 beforeEach(() => {
   rows = [];
@@ -189,6 +202,18 @@ describe('cv-documents db helpers', () => {
     const docs = await listCvDocumentsByJob('job-1');
     expect(docs).toHaveLength(2);
     expect(docs.every((d) => d.job_id === 'job-1')).toBe(true);
+  });
+
+  it('listCvDocumentJobIds returns distinct non-null job ids', async () => {
+    // seed two docs with job_id 'j1', one with 'j2', one master (job_id null) via the mock's rows
+    rows.push(
+      { id: '1', job_id: 'j1' },
+      { id: '2', job_id: 'j1' },
+      { id: '3', job_id: 'j2' },
+      { id: '4', job_id: null },
+    );
+    await expect(listCvDocumentJobIds()).resolves.toEqual(expect.arrayContaining(['j1', 'j2']));
+    await expect(listCvDocumentJobIds()).resolves.toHaveLength(2);
   });
 
   // Non-vacuous error-path tests: these MUST fail if `if (error) throw error` is removed.

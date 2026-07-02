@@ -16,6 +16,10 @@ function makeQuery(_table: string) {
 
   const builder: any = {
     select() { return builder; },
+    // awaited chains without a terminal (bare select('job_id')) resolve all rows here:
+    then(onFulfilled: (v: any) => any) {
+      return Promise.resolve({ data: [...rows], error: null }).then(onFulfilled);
+    },
     upsert(values: any, opts: { onConflict?: string } = {}) {
       if (opts.onConflict) {
         const conflictCols = opts.onConflict.split(',').map((s: string) => s.trim());
@@ -72,7 +76,12 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('@/lib/auth/ensure-user', () => ({ ensureUser: vi.fn(async () => {}) }));
 vi.mock('@clerk/nextjs/server', () => ({ auth: vi.fn(async () => ({ userId: 'user_1' })) }));
 
-import { upsertCoverLetter, getCoverLetter, listCoverLettersByJob } from './cover-letters';
+import {
+  upsertCoverLetter,
+  getCoverLetter,
+  listCoverLettersByJob,
+  listCoverLetterJobIds,
+} from './cover-letters';
 
 beforeEach(() => {
   rows = [];
@@ -93,5 +102,11 @@ describe('cover-letters db helpers', () => {
   it('listCoverLettersByJob returns rows', async () => {
     await upsertCoverLetter({ job_id: 'j1', track_id: 't1', points: [], body: 'a' });
     await expect(listCoverLettersByJob('j1')).resolves.toHaveLength(1);
+  });
+
+  it('listCoverLetterJobIds returns distinct job ids', async () => {
+    await upsertCoverLetter({ job_id: 'j1', track_id: 't1', points: [], body: 'a' });
+    await upsertCoverLetter({ job_id: 'j1', track_id: 't2', points: [], body: 'b' });
+    await expect(listCoverLetterJobIds()).resolves.toEqual(['j1']);
   });
 });

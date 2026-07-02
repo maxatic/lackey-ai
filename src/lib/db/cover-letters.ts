@@ -40,6 +40,13 @@ export async function getCoverLetter(jobId: string, trackId: string): Promise<Co
   return data ?? null;
 }
 
+export async function listCoverLetterJobIds(): Promise<string[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase.from('cover_letters').select('job_id');
+  if (error) throw error;
+  return [...new Set((data ?? []).map((r) => r.job_id))];
+}
+
 export async function listCoverLettersByJob(jobId: string): Promise<CoverLetter[]> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase

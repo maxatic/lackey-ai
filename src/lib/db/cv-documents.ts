@@ -52,6 +52,16 @@ export async function listCvDocuments(trackId: string, jobId: string | null = nu
   return data ?? [];
 }
 
+export async function listCvDocumentJobIds(): Promise<string[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('cv_documents')
+    .select('job_id')
+    .not('job_id', 'is', null);
+  if (error) throw error;
+  return [...new Set((data ?? []).map((r) => r.job_id as string))];
+}
+
 export async function listCvDocumentsByJob(jobId: string): Promise<CvDocument[]> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase

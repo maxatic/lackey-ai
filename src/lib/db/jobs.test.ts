@@ -7,56 +7,50 @@ let rows: any[] = [];
 let nextId = 1;
 
 // Minimal chainable query builder matching the calls our helpers make.
-// IMPORTANT: the builder itself is NOT thenable (the client object is not awaited directly).
-// Terminal methods (single, maybeSingle, order) return Promise.resolve(result).
-// delete().eq() chain: eq() returns a thenable builder so `await .delete().eq()` resolves to result.
-//
-// Mutation ordering: Supabase chains go update(patch).eq(id) and delete().eq(id).
-// So eq() must apply deferred mutations once the id is known.
+// IMPORTANT: the builder itself IS thenable only so that awaited chains without a
+// terminal (delete().eq(), update().eq().eq()) resolve; the client object is not awaited.
+// Filters collect across the chain and mutations apply at a terminal (then/single/maybeSingle),
+// so multi-filter conditional updates like update().eq('id', x).eq('status', 'saved') work.
 function makeQuery(_table: string) {
   let pending: any[] | null = null; // rows staged by insert for select().single()
-  let pendingPatch: any | null = null; // patch staged by update(), applied in eq()
-  let isDelete = false; // delete() sets this, eq() applies it
-  let lastEqVal: string | null = null; // last eq() value, for maybeSingle() lookups
+  let pendingPatch: any | null = null; // patch staged by update(), applied at a terminal
+  let isDelete = false;
+  let filters: { col: string; val: any }[] = [];
+  const matches = (r: any) => filters.every((f) => r[f.col] === f.val);
+  const applyPending = () => {
+    if (pendingPatch !== null) {
+      const matched = rows.filter(matches);
+      matched.forEach((r) => Object.assign(r, pendingPatch));
+      pending = matched;
+      pendingPatch = null;
+    }
+    if (isDelete) {
+      rows = rows.filter((r) => !matches(r));
+      isDelete = false;
+    }
+  };
   const builder: any = {
     select() { return builder; },
     order() { return Promise.resolve({ data: [...rows], error: null }); },
     insert(values: any) {
-      const row = { id: String(nextId++), ...values };
+      // DB defaults for the new pipeline columns:
+      const row = { id: String(nextId++), status: 'saved', applied_at: null, notes: '', ...values };
       rows.push(row);
       pending = [row];
       return builder;
     },
-    update(patch: any) {
-      pendingPatch = patch;
-      return builder;
-    },
-    delete() {
-      isDelete = true;
-      return builder;
-    },
-    eq(_col: string, val: string) {
-      lastEqVal = val;
-      if (pendingPatch !== null) {
-        // Apply deferred update now that we know the id
-        const row = rows.find((r) => r.id === val);
-        if (row) Object.assign(row, pendingPatch);
-        pending = row ? [row] : [];
-        pendingPatch = null;
-      }
-      if (isDelete) {
-        rows = rows.filter((r) => r.id !== val);
-        isDelete = false;
-      }
-      return builder;
-    },
-    // Makes delete().eq() awaitable: `await supabase.from(...).delete().eq(...)` resolves to result
+    update(patch: any) { pendingPatch = patch; return builder; },
+    delete() { isDelete = true; return builder; },
+    eq(col: string, val: any) { filters.push({ col, val }); return builder; },
+    // awaited chains without select() (delete().eq(), update().eq().eq()) resolve here:
     then(onFulfilled: (v: any) => any) {
+      applyPending();
       return Promise.resolve({ data: null, error: null }).then(onFulfilled);
     },
-    single() { return Promise.resolve({ data: pending![0], error: null }); },
+    single() { applyPending(); return Promise.resolve({ data: pending![0], error: null }); },
     maybeSingle() {
-      return Promise.resolve({ data: pending?.[0] ?? rows.find((r) => r.id === lastEqVal) ?? null, error: null });
+      applyPending();
+      return Promise.resolve({ data: pending?.[0] ?? rows.find(matches) ?? null, error: null });
     },
   };
   return builder;
@@ -73,7 +67,15 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('@/lib/auth/ensure-user', () => ({ ensureUser: vi.fn(async () => {}) }));
 vi.mock('@clerk/nextjs/server', () => ({ auth: vi.fn(async () => ({ userId: 'user_1' })) }));
 
-import { listJobs, createJob, getJob, updateJob, deleteJob } from './jobs';
+import {
+  listJobs,
+  createJob,
+  getJob,
+  updateJob,
+  deleteJob,
+  updateJobStatus,
+  advanceJobToPrepared,
+} from './jobs';
 
 beforeEach(() => {
   rows = [];
@@ -106,4 +108,60 @@ describe('jobs db helpers', () => {
     await deleteJob(job.id);
     await expect(getJob(job.id)).resolves.toBeNull();
   });
+});
+
+describe('updateJobStatus', () => {
+  it('stamps applied_at on entering applied, only once', async () => {
+    const job = await createJob({ title: 'A', company: null, raw_text: 'x', parsed: {} });
+    const applied = await updateJobStatus(job.id, 'applied');
+    expect(applied.status).toBe('applied');
+    expect(applied.applied_at).toBeTruthy();
+    const interviewing = await updateJobStatus(job.id, 'interviewing');
+    expect(interviewing.applied_at).toBe(applied.applied_at); // preserved, not re-stamped
+  });
+
+  it('clears applied_at when moving back to saved or prepared', async () => {
+    const job = await createJob({ title: 'A', company: null, raw_text: 'x', parsed: {} });
+    await updateJobStatus(job.id, 'applied');
+    const back = await updateJobStatus(job.id, 'saved');
+    expect(back.applied_at).toBeNull();
+  });
+
+  it('preserves applied_at through offer and rejected', async () => {
+    const job = await createJob({ title: 'A', company: null, raw_text: 'x', parsed: {} });
+    const applied = await updateJobStatus(job.id, 'applied');
+    const offer = await updateJobStatus(job.id, 'offer');
+    expect(offer.applied_at).toBe(applied.applied_at);
+    const rejected = await updateJobStatus(job.id, 'rejected');
+    expect(rejected.applied_at).toBe(applied.applied_at);
+  });
+
+  it('throws "Job not found" for an unknown id', async () => {
+    await expect(updateJobStatus('nope', 'applied')).rejects.toThrow('Job not found');
+  });
+});
+
+describe('advanceJobToPrepared', () => {
+  it('advances a saved job to prepared', async () => {
+    const job = await createJob({ title: 'A', company: null, raw_text: 'x', parsed: {} });
+    await advanceJobToPrepared(job.id);
+    await expect(getJob(job.id)).resolves.toMatchObject({ status: 'prepared' });
+  });
+
+  it('is a silent no-op when the job is already past saved', async () => {
+    const job = await createJob({ title: 'A', company: null, raw_text: 'x', parsed: {} });
+    await updateJobStatus(job.id, 'applied');
+    await advanceJobToPrepared(job.id); // must NOT downgrade
+    await expect(getJob(job.id)).resolves.toMatchObject({ status: 'applied' });
+  });
+
+  it('is a silent no-op for a missing job', async () => {
+    await expect(advanceJobToPrepared('ghost')).resolves.toBeUndefined();
+  });
+});
+
+it('updateJob accepts a notes patch', async () => {
+  const job = await createJob({ title: 'A', company: null, raw_text: 'x', parsed: {} });
+  const updated = await updateJob(job.id, { notes: 'phone screen Friday' });
+  expect(updated.notes).toBe('phone screen Friday');
 });
