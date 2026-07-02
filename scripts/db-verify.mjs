@@ -31,11 +31,11 @@ try {
   // Assertions
   let failed = false;
 
-  if (tableNames.length !== 12) {
-    console.error(`FAIL: expected 12 public tables, got ${tableNames.length}: ${tableNames.join(', ')}`);
+  if (tableNames.length !== 13) {
+    console.error(`FAIL: expected 13 public tables, got ${tableNames.length}: ${tableNames.join(', ')}`);
     failed = true;
   } else {
-    console.log(`✓ 12 public tables confirmed`);
+    console.log(`✓ 13 public tables confirmed`);
   }
 
   if (enumValues.length !== 7) {
@@ -58,10 +58,10 @@ try {
     "select count(*) filter (where rowsecurity) as rls_tables from pg_tables where schemaname='public' and tablename != 'schema_migrations'"
   );
   const rlsCount = Number(rls.rows[0].rls_tables);
-  if (rlsCount === 12) {
-    console.log('✓ RLS enabled on all 12 public tables');
+  if (rlsCount === 13) {
+    console.log('✓ RLS enabled on all 13 public tables');
   } else {
-    console.warn(`WARN: RLS enabled on ${rlsCount}/12 public tables (run db:migrate to apply latest migrations)`);
+    console.warn(`WARN: RLS enabled on ${rlsCount}/13 public tables (run db:migrate to apply latest migrations)`);
   }
 
   // Storage bucket check

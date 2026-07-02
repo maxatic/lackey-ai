@@ -237,6 +237,12 @@ export type Database = {
         Update: { id?: string; user_id?: string; track_id?: string; skill_id?: string; sort_order?: number };
         Relationships: [];
       };
+      cover_letters: {
+        Row: { id: string; user_id: string; job_id: string; track_id: string; points: Json; body: string; created_at: string; updated_at: string };
+        Insert: { id?: string; user_id: string; job_id: string; track_id: string; points?: Json; body?: string; created_at?: string; updated_at?: string };
+        Update: { id?: string; user_id?: string; job_id?: string; track_id?: string; points?: Json; body?: string; created_at?: string; updated_at?: string };
+        Relationships: [];
+      };
       cv_documents: {
         Row: { id: string; user_id: string; track_id: string; locale: string; storage_path: string; job_id: string | null; created_at: string; updated_at: string };
         Insert: { id?: string; user_id: string; track_id: string; locale: string; storage_path: string; job_id?: string | null; created_at?: string; updated_at?: string };
