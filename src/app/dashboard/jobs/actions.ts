@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { parseJd } from '@/lib/jd/parse';
 import { createJob, deleteJob, updateJob } from '@/lib/db/jobs';
+import { toActionError } from '@/lib/action-error';
 
 export async function createJobAction(formData: FormData): Promise<{ error: string }> {
   const rawText = String(formData.get('raw_text') ?? '');
@@ -17,7 +18,7 @@ export async function createJobAction(formData: FormData): Promise<{ error: stri
     });
     jobId = job.id;
   } catch (err) {
-    return { error: err instanceof Error ? err.message : 'Could not add this job' };
+    return { error: toActionError(err) };
   }
   revalidatePath('/dashboard/jobs');
   redirect(`/dashboard/jobs/${jobId}`); // throws — never returns
@@ -27,7 +28,7 @@ export async function updateJobAction(id: string, patch: { title?: string; compa
   try {
     await updateJob(id, patch);
   } catch (err) {
-    return { error: err instanceof Error ? err.message : 'Update failed' };
+    return { error: toActionError(err) };
   }
   revalidatePath(`/dashboard/jobs/${id}`);
   return {};

@@ -12,6 +12,7 @@ import { upsertNodeCv } from '@/lib/db/node-cvs';
 import { upsertCvDocument } from '@/lib/db/cv-documents';
 import { CV_LOCALES, type CvLocale } from '@/lib/cv/types';
 import { validateParsedJd } from '@/lib/jd/parse';
+import { toActionError } from '@/lib/action-error';
 
 export async function suggestTailoringAction(
   jobId: string,
@@ -26,7 +27,7 @@ export async function suggestTailoringAction(
     const suggestions = await suggestCvDiff(parsed, snapshot);
     return { suggestions, snapshot };
   } catch (err) {
-    return { error: err instanceof Error ? err.message : 'Suggestion failed' };
+    return { error: toActionError(err) };
   }
 }
 
