@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/lib/db/jobs.test.ts
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // In-memory rows the stub reads/writes.
 let rows: any[] = [];
@@ -111,13 +111,32 @@ describe('jobs db helpers', () => {
 });
 
 describe('updateJobStatus', () => {
+  // Fake timers so each transition happens at a distinguishable timestamp —
+  // otherwise "preserve" and "re-stamp" produce identical ISO strings.
+  const T1 = '2026-07-03T10:00:00.000Z';
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-03T10:00:00Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('stamps applied_at on entering applied, only once', async () => {
     const job = await createJob({ title: 'A', company: null, raw_text: 'x', parsed: {} });
     const applied = await updateJobStatus(job.id, 'applied');
     expect(applied.status).toBe('applied');
-    expect(applied.applied_at).toBeTruthy();
+    expect(applied.applied_at).toBe(T1);
+    vi.advanceTimersByTime(60_000);
     const interviewing = await updateJobStatus(job.id, 'interviewing');
-    expect(interviewing.applied_at).toBe(applied.applied_at); // preserved, not re-stamped
+    expect(interviewing.applied_at).toBe(T1); // preserved, not re-stamped
+    vi.advanceTimersByTime(60_000);
+    // Re-entering applied with applied_at already set: the stamp-only-if-null
+    // guard must keep the ORIGINAL stamp despite the advanced clock.
+    const reApplied = await updateJobStatus(job.id, 'applied');
+    expect(reApplied.applied_at).toBe(T1);
   });
 
   it('clears applied_at when moving back to saved or prepared', async () => {
@@ -130,10 +149,23 @@ describe('updateJobStatus', () => {
   it('preserves applied_at through offer and rejected', async () => {
     const job = await createJob({ title: 'A', company: null, raw_text: 'x', parsed: {} });
     const applied = await updateJobStatus(job.id, 'applied');
+    expect(applied.applied_at).toBe(T1);
+    vi.advanceTimersByTime(60_000);
     const offer = await updateJobStatus(job.id, 'offer');
-    expect(offer.applied_at).toBe(applied.applied_at);
+    expect(offer.applied_at).toBe(T1);
+    vi.advanceTimersByTime(60_000);
     const rejected = await updateJobStatus(job.id, 'rejected');
-    expect(rejected.applied_at).toBe(applied.applied_at);
+    expect(rejected.applied_at).toBe(T1);
+  });
+
+  it('re-stamps applied_at after a clear-then-reapply cycle', async () => {
+    const job = await createJob({ title: 'A', company: null, raw_text: 'x', parsed: {} });
+    const first = await updateJobStatus(job.id, 'applied');
+    expect(first.applied_at).toBe(T1);
+    await updateJobStatus(job.id, 'saved'); // clears applied_at
+    vi.advanceTimersByTime(60_000);
+    const second = await updateJobStatus(job.id, 'applied');
+    expect(second.applied_at).toBe('2026-07-03T10:01:00.000Z'); // new stamp, T2 !== T1
   });
 
   it('throws "Job not found" for an unknown id', async () => {
