@@ -250,9 +250,9 @@ export type Database = {
         Relationships: [];
       };
       job_descriptions: {
-        Row: { id: string; user_id: string; title: string; company: string | null; raw_text: string; parsed: Json; status: string; applied_at: string | null; notes: string; created_at: string; updated_at: string };
-        Insert: { id?: string; user_id: string; title: string; company?: string | null; raw_text: string; parsed?: Json; status?: string; applied_at?: string | null; notes?: string; created_at?: string; updated_at?: string };
-        Update: { id?: string; user_id?: string; title?: string; company?: string | null; raw_text?: string; parsed?: Json; status?: string; applied_at?: string | null; notes?: string; created_at?: string; updated_at?: string };
+        Row: { id: string; user_id: string; title: string; company: string | null; raw_text: string; parsed: Json; status: string; applied_at: string | null; notes: string; source: string | null; source_id: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; user_id: string; title: string; company?: string | null; raw_text: string; parsed?: Json; status?: string; applied_at?: string | null; notes?: string; source?: string | null; source_id?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; user_id?: string; title?: string; company?: string | null; raw_text?: string; parsed?: Json; status?: string; applied_at?: string | null; notes?: string; source?: string | null; source_id?: string | null; created_at?: string; updated_at?: string };
         Relationships: [];
       };
       node_cvs: {
