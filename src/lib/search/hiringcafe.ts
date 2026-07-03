@@ -2,12 +2,13 @@ import { JD_DESCRIPTION_MAX, SEARCH_COUNTRIES, type JobSearchQuery, type JobSear
 
 const ACTOR = 'memo23~apify-hiring-cafe-scraper';
 const str = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v : null);
+const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' ? (v as Record<string, unknown>) : {});
 
 export function mapHiringCafe(raw: unknown): JobSearchResult | null {
   if (!raw || typeof raw !== 'object') return null;
-  const r = raw as Record<string, any>;
-  const info = r.job_information ?? {};
-  const proc = r.v2_processed_job_data ?? {};
+  const r = raw as Record<string, unknown>;
+  const info = obj(r.job_information);
+  const proc = obj(r.v2_processed_job_data);
   // Defensive: unofficial API — accept several candidate paths per field.
   const title = str(info.title) ?? str(proc.core_job_title) ?? str(r.title);
   const url = str(r.apply_url) ?? str(r.applyUrl) ?? str(r.url);
@@ -20,7 +21,7 @@ export function mapHiringCafe(raw: unknown): JobSearchResult | null {
     source: 'hiringcafe',
     source_id: id,
     title,
-    company: str(r.v2_processed_company_data?.name) ?? str(r.company_name),
+    company: str(obj(r.v2_processed_company_data).name) ?? str(r.company_name),
     location: str(proc.formatted_workplace_location) ?? str(r.location),
     remote: workplace === null ? null : workplace.toLowerCase() === 'remote',
     salary: min || max ? `${min ? Math.round(min).toLocaleString('en') : '?'} – ${max ? Math.round(max).toLocaleString('en') : '?'}` : null,

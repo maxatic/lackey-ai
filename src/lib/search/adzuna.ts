@@ -1,10 +1,11 @@
 import { JD_DESCRIPTION_MAX, type JobSearchQuery, type JobSearchResult } from './types';
 
 const str = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v : null);
+const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' ? (v as Record<string, unknown>) : {});
 
 export function mapAdzuna(raw: unknown): JobSearchResult | null {
   if (!raw || typeof raw !== 'object') return null;
-  const r = raw as Record<string, any>;
+  const r = raw as Record<string, unknown>;
   const id = r.id != null ? String(r.id) : null;
   const title = str(r.title);
   const url = str(r.redirect_url);
@@ -15,8 +16,8 @@ export function mapAdzuna(raw: unknown): JobSearchResult | null {
     source: 'adzuna',
     source_id: id,
     title,
-    company: str(r.company?.display_name),
-    location: str(r.location?.display_name),
+    company: str(obj(r.company).display_name),
+    location: str(obj(r.location).display_name),
     remote: null, // Adzuna has no remote flag
     salary: min || max ? `${min ? Math.round(min).toLocaleString('en') : '?'} – ${max ? Math.round(max).toLocaleString('en') : '?'}` : null,
     url,
