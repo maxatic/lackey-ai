@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ensureUser } from '@/lib/auth/ensure-user';
 import type { Database, Json } from '@/lib/db/database.types';
 import type { JobStatus } from './job-status';
+import type { JobSearchResult } from '@/lib/search/types';
 
 export type Job = Database['public']['Tables']['job_descriptions']['Row'];
 
@@ -34,6 +35,56 @@ export async function createJob(input: {
     .single();
   if (error) throw error;
   return data;
+}
+
+export async function createJobFromSearch(result: JobSearchResult): Promise<Job> {
+  await ensureUser();
+  const { userId } = await auth();
+  if (!userId) throw new Error('Not authenticated');
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('job_descriptions')
+    .insert({
+      user_id: userId,
+      title: result.title,
+      company: result.company,
+      raw_text: result.description,
+      source: result.source,
+      source_id: result.source_id,
+      parsed: {
+        title: result.title,
+        company: result.company,
+        location: result.location,
+        language: null,
+        requirements: [],
+        keywords: [],
+      },
+    })
+    .select('*')
+    .single();
+  if (!error) return data;
+  // 23505 = unique_violation on (user_id, source, source_id): already saved — idempotent success.
+  if ((error as { code?: string }).code === '23505') {
+    const { data: existing, error: readError } = await supabase
+      .from('job_descriptions')
+      .select('*')
+      .eq('source', result.source)
+      .eq('source_id', result.source_id)
+      .maybeSingle();
+    if (readError) throw readError;
+    if (existing) return existing;
+  }
+  throw error;
+}
+
+export async function listSavedSourceIds(): Promise<{ source: string; source_id: string }[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('job_descriptions')
+    .select('source, source_id')
+    .not('source', 'is', null);
+  if (error) throw error;
+  return (data ?? []).filter((r): r is { source: string; source_id: string } => !!r.source && !!r.source_id);
 }
 
 export async function getJob(id: string): Promise<Job | null> {

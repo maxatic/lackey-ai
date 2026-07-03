@@ -18,6 +18,8 @@ const SAFE_MESSAGES = new Set([
   'No talking points selected — accept at least one point',
   'Invalid status',
   'Notes are too long (max 5,000 characters)',
+  'Enter search keywords',
+  'Invalid search result',
 ]);
 
 export const GENERIC_ACTION_ERROR = 'Something went wrong — please try again';

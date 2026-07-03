@@ -14,9 +14,12 @@ let nextId = 1;
 function makeQuery(_table: string) {
   let pending: any[] | null = null; // rows staged by insert for select().single()
   let pendingPatch: any | null = null; // patch staged by update(), applied at a terminal
+  let pendingError: any = null; // error staged by insert (unique violation), surfaced at single()
   let isDelete = false;
-  const filters: { col: string; val: any }[] = [];
-  const matches = (r: any) => filters.every((f) => r[f.col] === f.val);
+  let selectedCols: string | null = null; // column projection for awaited select() chains
+  const filters: { col: string; val: any; not?: boolean }[] = [];
+  const matches = (r: any) =>
+    filters.every((f) => (f.not ? r[f.col] !== f.val : r[f.col] === f.val));
   const applyPending = () => {
     if (pendingPatch !== null) {
       const matched = rows.filter(matches);
@@ -30,11 +33,24 @@ function makeQuery(_table: string) {
     }
   };
   const builder: any = {
-    select() { return builder; },
+    select(cols?: string) { selectedCols = cols ?? null; return builder; },
     order() { return Promise.resolve({ data: [...rows], error: null }); },
     insert(values: any) {
+      // Simulate the (user_id, source, source_id) unique constraint for source rows:
+      if (
+        values.source != null &&
+        rows.some(
+          (r) =>
+            r.user_id === values.user_id &&
+            r.source === values.source &&
+            r.source_id === values.source_id,
+        )
+      ) {
+        pendingError = { code: '23505', message: 'duplicate key value violates unique constraint' };
+        return builder;
+      }
       // DB defaults for the new pipeline columns:
-      const row = { id: String(nextId++), status: 'saved', applied_at: null, notes: '', ...values };
+      const row = { id: String(nextId++), status: 'saved', applied_at: null, notes: '', source: null, source_id: null, ...values };
       rows.push(row);
       pending = [row];
       return builder;
@@ -42,12 +58,23 @@ function makeQuery(_table: string) {
     update(patch: any) { pendingPatch = patch; return builder; },
     delete() { isDelete = true; return builder; },
     eq(col: string, val: any) { filters.push({ col, val }); return builder; },
-    // awaited chains without select() (delete().eq(), update().eq().eq()) resolve here:
+    not(col: string, _op: string, val: any) { filters.push({ col, val, not: true }); return builder; },
+    // awaited chains without a row terminal (delete().eq(), update().eq().eq(),
+    // select('cols').not(...)) resolve here:
     then(onFulfilled: (v: any) => any) {
       applyPending();
-      return Promise.resolve({ data: null, error: null }).then(onFulfilled);
+      let data: any = null;
+      if (selectedCols && selectedCols !== '*') {
+        const cols = selectedCols.split(',').map((c) => c.trim());
+        data = rows.filter(matches).map((r) => Object.fromEntries(cols.map((c) => [c, r[c]])));
+      }
+      return Promise.resolve({ data, error: null }).then(onFulfilled);
     },
-    single() { applyPending(); return Promise.resolve({ data: pending![0], error: null }); },
+    single() {
+      applyPending();
+      if (pendingError) return Promise.resolve({ data: null, error: pendingError });
+      return Promise.resolve({ data: pending![0], error: null });
+    },
     maybeSingle() {
       applyPending();
       return Promise.resolve({ data: pending?.[0] ?? rows.find(matches) ?? null, error: null });
@@ -75,7 +102,10 @@ import {
   deleteJob,
   updateJobStatus,
   advanceJobToPrepared,
+  createJobFromSearch,
+  listSavedSourceIds,
 } from './jobs';
+import { validateParsedJd } from '@/lib/jd/parse';
 
 beforeEach(() => {
   rows = [];
@@ -189,6 +219,35 @@ describe('advanceJobToPrepared', () => {
 
   it('is a silent no-op for a missing job', async () => {
     await expect(advanceJobToPrepared('ghost')).resolves.toBeUndefined();
+  });
+});
+
+describe('createJobFromSearch', () => {
+  const RESULT = {
+    source: 'adzuna' as const, source_id: '5001', title: 'Dev', company: 'ACME',
+    location: 'Berlin', remote: null, salary: null,
+    url: 'https://example.com/5001', description: 'JD text here', posted_at: null,
+  };
+
+  it('inserts a job with source provenance and valid parsed payload', async () => {
+    const job = await createJobFromSearch(RESULT);
+    expect(job).toMatchObject({ title: 'Dev', company: 'ACME', source: 'adzuna', source_id: '5001', user_id: 'user_1' });
+    expect(job.raw_text).toBe('JD text here');
+    // parsed must satisfy validateParsedJd so the job page + tailoring work:
+    expect(job.parsed).toMatchObject({ title: 'Dev', company: 'ACME', location: 'Berlin', requirements: [], keywords: [] });
+    expect(validateParsedJd(job.parsed)).not.toBeNull();
+  });
+
+  it('is idempotent: re-saving returns the existing row', async () => {
+    const first = await createJobFromSearch(RESULT);
+    const second = await createJobFromSearch(RESULT);
+    expect(second.id).toBe(first.id);
+  });
+
+  it('listSavedSourceIds returns source pairs for source-backed rows only', async () => {
+    await createJobFromSearch(RESULT);
+    await createJob({ title: 'pasted', company: null, raw_text: 'x', parsed: {} });
+    await expect(listSavedSourceIds()).resolves.toEqual([{ source: 'adzuna', source_id: '5001' }]);
   });
 });
 

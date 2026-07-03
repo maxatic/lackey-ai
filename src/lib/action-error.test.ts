@@ -15,6 +15,8 @@ const SAFE = [
   'No talking points selected — accept at least one point',
   'Invalid status',
   'Notes are too long (max 5,000 characters)',
+  'Enter search keywords',
+  'Invalid search result',
 ];
 
 it('passes through every allowlisted message', () => {
