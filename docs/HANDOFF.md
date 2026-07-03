@@ -1,14 +1,23 @@
 # Lackey AI — Handoff
 
-**As of:** 2026-07-03 (Phase 5 Job Tracker merged & pushed — phases 0–5 done; Phase 4 already live)
-**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` — pushed; origin in sync
+**As of:** 2026-07-03 (Phase 8 Job Search merged — phases 0–5 + 8 done; only 6/7 [interview prep] remain on the roadmap)
+**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` — **push pending** (Phase 8 + docs), run `git push` to deploy
 
 > ## ▶ RESUME HERE
-> **Phases 0–5 are shipped.** The MVP (0–4: Skeleton → master CVs → Node CVs → cover letters) plus the Phase 5 tracker: `/dashboard/jobs` is now a filterable pipeline table (Saved → Prepared → Applied → Interviewing → Offer → Rejected) with inline status editing, applied-date stamping, has-CV/has-letter indicators, and per-job notes; generating a CV or saving a letter auto-advances Saved → Prepared. 184/184 tests; final review FIX-THEN-SHIP with the one fix applied (`updateJobAction` patch whitelist). Migration `0006` applied to the live DB.
-> **Ops still pending:** (1) `ANTHROPIC_API_KEY` in Vercel env — gates ALL AI features in prod (parse, tailor, letters); (2) Fly compile-service deploy — gates PDF output only. The tracker itself needs neither.
-> **Post-deploy smoke (once Fly is up):** generate one **master** CV twice on a track page — exercises the `NULLS NOT DISTINCT` upsert constraint live.
-> **Next per roadmap:** Phase 6 (Interview Prep: question bank) or Phase 8 (job search feeds) — both v2; no dependencies blocking either. Also open: custom domain + Clerk production instance; CI (build + secret scan) before serious traffic.
+> **Phase 8 (Job Search) is done and merged.** New **Find jobs** page (`/dashboard/search`): keywords + EU country + remote → merged results from **Hiring Cafe** (via Apify actor `memo23~apify-hiring-cafe-scraper`, unofficial, ~$0.03/search) and **Adzuna** (official, free) with per-source degradation → **Save to Jobs** maps a result straight into the pipeline at Saved (AI-free, idempotent via `(user_id, source, source_id)` unique index). 210/210 tests; final review FIX-THEN-SHIP, fix applied (mappers reject non-http(s) URLs — render-path `javascript:` vector). Migration `0007` applied to the live DB. EURES was dropped (its ToS forbids automated extraction).
+> **NEW ops step — search needs API keys:** create free accounts and set `APIFY_TOKEN` (apify.com) + `ADZUNA_APP_ID`/`ADZUNA_APP_KEY` (developer.adzuna.com) in `.env.local` AND Vercel. Without them each source degrades with a clean "unavailable" notice. **Post-deploy smoke:** run one real search per source; if the Hiring Cafe mapper misses fields (unofficial API), capture real JSON into `src/lib/search/__fixtures__/hiringcafe.json` and adjust `mapHiringCafe` — fixture tests make that a 10-minute fix.
+> **Ops still pending from before:** `ANTHROPIC_API_KEY` in Vercel (all AI features); Fly compile-service deploy (PDFs); master-CV double-generate smoke once Fly is up.
+> **Remaining roadmap:** Phase 6 (interview question bank) → Phase 7 (ElevenLabs voice, needs 6). Launch list (not phase-shaped): custom domain + Clerk prod instance, Stripe/freemium gating, CI (build + secret scan).
 **Live:** https://lackey-ai-main.vercel.app (Vercel project **`lackey-ai-main`**, auto-deploys on push to `main`).
+
+## ✅ Done — Phase 8 (Job Search) — built, reviewed, merged (2026-07-03)
+
+Subagent-driven build (4 tasks + 3 review-driven fixes, final whole-branch review = FIX-THEN-SHIP → fixed). Branch `feat/phase-8-job-search` (`5fa5643..d2118ea`) merged to `main`. [Spec](superpowers/specs/2026-07-03-job-search-design.md) · [plan](superpowers/plans/2026-07-03-job-search.md) · trail in `.superpowers/sdd/progress.md`.
+
+- **Adapters** (`src/lib/search/`): Hiring Cafe (Apify sync endpoint, defensive multi-path mapper — unofficial API) + Adzuna (official REST); pure mappers pinned by committed fixtures; `searchJobs` merges via `Promise.allSettled` (one source down → notice, not failure), dedups by title+company, 25 results/source, 25s timeouts inside a 60s `maxDuration` (segment config on the page — Next forbids it in 'use server' files).
+- **Save flow:** client-echoed results re-sanitized server-side (source whitelist, http(s)-only URLs, 20k description cap) → `createJobFromSearch` prefills `parsed` (passes `validateParsedJd`, so job page/tailor/letter work unchanged) → 23505 unique-violation recovered as idempotent success.
+- **Review-driven fixes:** Task-2 lint errors blocking `next build`; `maxDuration` relocation; mapper URL-scheme guard (final review).
+- **Deferred (cosmetic):** cross-source double-save possible (same posting via both sources); single `savingKey` during concurrent saves (server idempotency covers); re-search keeps stale results visible; Apify token in query param (Bearer header later); sanitize doesn't trim/cap short fields.
 
 ## ✅ Done — Phase 5 (Job Tracker) — built, reviewed, merged (2026-07-03)
 
