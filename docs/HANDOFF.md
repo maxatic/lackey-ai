@@ -1,14 +1,23 @@
 # Lackey AI — Handoff
 
-**As of:** 2026-07-02 (Phase 4 Cover Letter merged — **the MVP line, phases 0–4, is code-complete**; Phases 0–3 + design refresh pushed & live)
-**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` — 9 commits ahead of origin (Phase 4 + docs), **run `git push` to deploy**
+**As of:** 2026-07-03 (Phase 5 Job Tracker merged & pushed — phases 0–5 done; Phase 4 already live)
+**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` — pushed; origin in sync
 
 > ## ▶ RESUME HERE
-> **Phase 4 (Cover Letter) is done and merged to local `main` — MVP complete.** On a Job page: pick a Track → AI proposes Skeleton-grounded talking points → accept/reject → AI writes an English letter from only the accepted points → edit in a textarea → Save (persists per job+track) + Copy. 164/164 tests, final review SHIP. Migration `0005` applied to the live DB. Also shipped: the `toActionError` allowlist (server actions no longer leak raw db/AI errors).
-> **To deploy:** `git push`. **Ops still pending:** (1) `ANTHROPIC_API_KEY` in Vercel env — gates ALL AI features in prod (parse, tailor, letters); (2) Fly compile-service deploy — gates PDF output only (letters are text, they work without it).
+> **Phases 0–5 are shipped.** The MVP (0–4: Skeleton → master CVs → Node CVs → cover letters) plus the Phase 5 tracker: `/dashboard/jobs` is now a filterable pipeline table (Saved → Prepared → Applied → Interviewing → Offer → Rejected) with inline status editing, applied-date stamping, has-CV/has-letter indicators, and per-job notes; generating a CV or saving a letter auto-advances Saved → Prepared. 184/184 tests; final review FIX-THEN-SHIP with the one fix applied (`updateJobAction` patch whitelist). Migration `0006` applied to the live DB.
+> **Ops still pending:** (1) `ANTHROPIC_API_KEY` in Vercel env — gates ALL AI features in prod (parse, tailor, letters); (2) Fly compile-service deploy — gates PDF output only. The tracker itself needs neither.
 > **Post-deploy smoke (once Fly is up):** generate one **master** CV twice on a track page — exercises the `NULLS NOT DISTINCT` upsert constraint live.
-> **Next phase per roadmap:** Phase 5 (Job Tracker) — pipeline table, auto-seeds when a CV/letter is generated for a JD. Jobs + node_cvs + cover_letters give it everything it needs.
+> **Next per roadmap:** Phase 6 (Interview Prep: question bank) or Phase 8 (job search feeds) — both v2; no dependencies blocking either. Also open: custom domain + Clerk production instance; CI (build + secret scan) before serious traffic.
 **Live:** https://lackey-ai-main.vercel.app (Vercel project **`lackey-ai-main`**, auto-deploys on push to `main`).
+
+## ✅ Done — Phase 5 (Job Tracker) — built, reviewed, merged (2026-07-03)
+
+Subagent-driven build (4 tasks + 2 review-driven fixes, final whole-branch review = FIX-THEN-SHIP → fixed). Branch `feat/phase-5-job-tracker` (`4ca1ee8..ceb89c7`) merged to `main`. [Spec](superpowers/specs/2026-07-02-job-tracker-design.md) · [plan](superpowers/plans/2026-07-02-job-tracker.md) · trail in `.superpowers/sdd/progress.md`.
+
+- **Jobs = the tracker:** `status`/`applied_at`/`notes` columns on `job_descriptions` (0006, check-constrained six-stage enum). `updateJobStatus` owns the applied-date matrix (stamp once on Applied, clear on Saved/Prepared, preserve otherwise — pinned by fake-timer + mutation-tested cases). `advanceJobToPrepared` is an atomic conditional update (`where status='saved'`) so it can never race a manual change into a downgrade; called best-effort from CV-generate and letter-save.
+- **UI:** pipeline table with status filter chips + optimistic inline status selects on `/dashboard/jobs`; Tracker card (status + notes, 5k cap) on the job detail page.
+- **Review-driven fixes:** applied_at tests strengthened with mutation-kill evidence; `updateJobAction` now whitelists `title`/`company` (a raw client patch could bypass the notes cap / status invariants — own-row only, but closed).
+- **Deferred (cosmetic):** TrackerCard textarea not disabled mid-save; `truncate` splits surrogate pairs; StatusSelect doesn't resync on external prop change; Tracker card sits above the parsed-JD section (spec said below — kept, reads better).
 
 ## ✅ Done — Phase 4 (Cover Letter) — built, reviewed, merged (2026-07-02) → MVP line complete
 
