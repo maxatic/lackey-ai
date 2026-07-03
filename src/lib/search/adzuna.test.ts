@@ -33,6 +33,14 @@ describe('adzuna adapter', () => {
     expect(mapAdzuna(null)).toBeNull();
   });
 
+  it('mapAdzuna rejects non-http(s) redirect_url and accepts http://', () => {
+    const base = { id: 6001, title: 'XSS Engineer' };
+    expect(mapAdzuna({ ...base, redirect_url: 'javascript:alert(1)' })).toBeNull();
+    expect(mapAdzuna({ ...base, redirect_url: 'http://adzuna.de/land/ad/6001' })).toMatchObject({
+      url: 'http://adzuna.de/land/ad/6001',
+    });
+  });
+
   it('searchAdzuna builds the URL and maps results', async () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => fixture });
     const results = await searchAdzuna(Q);

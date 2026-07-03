@@ -35,6 +35,14 @@ describe('hiringcafe adapter', () => {
     expect(mapHiringCafe(null)).toBeNull();
   });
 
+  it('mapHiringCafe rejects non-http(s) apply_url and accepts http://', () => {
+    const base = { id: 'hc-x', job_information: { title: 'XSS Engineer' } };
+    expect(mapHiringCafe({ ...base, apply_url: 'javascript:alert(1)' })).toBeNull();
+    expect(mapHiringCafe({ ...base, apply_url: 'http://jobs.example.com/x' })).toMatchObject({
+      url: 'http://jobs.example.com/x',
+    });
+  });
+
   it('searchHiringCafe POSTs the actor input and maps items', async () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => fixture });
     const results = await searchHiringCafe({ keywords: 'react', country: 'nl', remote: true });

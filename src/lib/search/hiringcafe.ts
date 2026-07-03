@@ -3,6 +3,16 @@ import { JD_DESCRIPTION_MAX, SEARCH_COUNTRIES, type JobSearchQuery, type JobSear
 const ACTOR = 'memo23~apify-hiring-cafe-scraper';
 const str = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v : null);
 const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' ? (v as Record<string, unknown>) : {});
+// Same check as sanitize.ts; duplicated on purpose to keep the modules decoupled.
+const httpUrl = (v: string | null): string | null => {
+  if (v === null) return null;
+  try {
+    const u = new URL(v);
+    return u.protocol === 'https:' || u.protocol === 'http:' ? v : null;
+  } catch {
+    return null;
+  }
+};
 
 export function mapHiringCafe(raw: unknown): JobSearchResult | null {
   if (!raw || typeof raw !== 'object') return null;
@@ -11,7 +21,7 @@ export function mapHiringCafe(raw: unknown): JobSearchResult | null {
   const proc = obj(r.v2_processed_job_data);
   // Defensive: unofficial API — accept several candidate paths per field.
   const title = str(info.title) ?? str(proc.core_job_title) ?? str(r.title);
-  const url = str(r.apply_url) ?? str(r.applyUrl) ?? str(r.url);
+  const url = httpUrl(str(r.apply_url) ?? str(r.applyUrl) ?? str(r.url));
   const id = (r.id != null ? String(r.id) : null) ?? url;
   if (!title || !url || !id) return null;
   const min = typeof proc.yearly_min_compensation === 'number' ? proc.yearly_min_compensation : null;

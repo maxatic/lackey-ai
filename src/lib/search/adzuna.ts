@@ -2,13 +2,23 @@ import { JD_DESCRIPTION_MAX, type JobSearchQuery, type JobSearchResult } from '.
 
 const str = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v : null);
 const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' ? (v as Record<string, unknown>) : {});
+// Same check as sanitize.ts; duplicated on purpose to keep the modules decoupled.
+const httpUrl = (v: string | null): string | null => {
+  if (v === null) return null;
+  try {
+    const u = new URL(v);
+    return u.protocol === 'https:' || u.protocol === 'http:' ? v : null;
+  } catch {
+    return null;
+  }
+};
 
 export function mapAdzuna(raw: unknown): JobSearchResult | null {
   if (!raw || typeof raw !== 'object') return null;
   const r = raw as Record<string, unknown>;
   const id = r.id != null ? String(r.id) : null;
   const title = str(r.title);
-  const url = str(r.redirect_url);
+  const url = httpUrl(str(r.redirect_url));
   if (!id || !title || !url) return null;
   const min = typeof r.salary_min === 'number' ? r.salary_min : null;
   const max = typeof r.salary_max === 'number' ? r.salary_max : null;
