@@ -1,0 +1,27 @@
+{
+  "results": [
+    {
+      "id": "5001",
+      "title": "Senior TypeScript Engineer",
+      "company": { "display_name": "ACME GmbH" },
+      "location": { "display_name": "Berlin, Deutschland", "area": ["Deutschland", "Berlin"] },
+      "description": "We are looking for a senior engineer with TypeScript and React experience...",
+      "redirect_url": "https://www.adzuna.de/land/ad/5001",
+      "salary_min": 70000,
+      "salary_max": 90000,
+      "created": "2026-06-28T09:00:00Z",
+      "contract_time": "full_time"
+    },
+    {
+      "id": "5002",
+      "title": "Backend Developer",
+      "description": "Node.js role.",
+      "redirect_url": "https://www.adzuna.de/land/ad/5002"
+    },
+    {
+      "id": "5003",
+      "title": "No URL Job",
+      "description": "unusable row"
+    }
+  ]
+}

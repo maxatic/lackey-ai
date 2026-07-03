@@ -1,0 +1,27 @@
+[
+  {
+    "id": "hc-1",
+    "apply_url": "https://jobs.lever.co/acme/123",
+    "job_information": {
+      "title": "Frontend Engineer",
+      "description": "Build the ACME dashboard with React and TypeScript..."
+    },
+    "v2_processed_job_data": {
+      "core_job_title": "Frontend Engineer",
+      "workplace_type": "Remote",
+      "formatted_workplace_location": "Amsterdam, Netherlands",
+      "yearly_min_compensation": 60000,
+      "yearly_max_compensation": 80000,
+      "estimated_publish_date": "2026-06-30T00:00:00Z"
+    },
+    "v2_processed_company_data": { "name": "ACME" }
+  },
+  {
+    "id": "hc-2",
+    "apply_url": "https://boards.greenhouse.io/beta/jobs/456",
+    "job_information": { "title": "Data Engineer", "description": "Pipelines." }
+  },
+  {
+    "job_information": { "description": "no title, no id, no url — unusable" }
+  }
+]
