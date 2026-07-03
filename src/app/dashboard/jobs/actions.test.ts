@@ -15,7 +15,7 @@ vi.mock('@/lib/db/jobs', () => ({
 vi.mock('next/navigation', () => ({ redirect: (u: string) => redirectMock(u) }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
-import { createJobAction, updateJobStatusAction, updateJobNotesAction } from './actions';
+import { createJobAction, updateJobAction, updateJobStatusAction, updateJobNotesAction } from './actions';
 
 beforeEach(() => { parseJdMock.mockReset(); createJobMock.mockReset(); updateJobMock.mockReset(); updateJobStatusMock.mockReset(); redirectMock.mockClear(); });
 
@@ -45,6 +45,12 @@ it('updateJobStatusAction updates on a valid status', async () => {
   updateJobStatusMock.mockResolvedValue({});
   await expect(updateJobStatusAction('j1', 'applied')).resolves.toEqual({});
   expect(updateJobStatusMock).toHaveBeenCalledWith('j1', 'applied');
+});
+
+it('updateJobAction drops extra keys (status/notes cannot be smuggled)', async () => {
+  updateJobMock.mockResolvedValue({});
+  await updateJobAction('j1', { title: 'T', status: 'applied', notes: 'x'.repeat(9999) } as any);
+  expect(updateJobMock).toHaveBeenCalledWith('j1', { title: 'T' });
 });
 
 it('updateJobNotesAction caps notes length', async () => {

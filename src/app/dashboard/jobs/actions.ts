@@ -27,7 +27,12 @@ export async function createJobAction(formData: FormData): Promise<{ error: stri
 
 export async function updateJobAction(id: string, patch: { title?: string; company?: string | null }): Promise<{ error?: string }> {
   try {
-    await updateJob(id, patch);
+    // Whitelist: server-action args are attacker-controllable — never spread the raw patch
+    // (would bypass the notes cap and the status/applied_at gate).
+    await updateJob(id, {
+      ...(patch.title !== undefined ? { title: String(patch.title) } : {}),
+      ...(patch.company !== undefined ? { company: patch.company === null ? null : String(patch.company) } : {}),
+    });
   } catch (err) {
     return { error: toActionError(err) };
   }
