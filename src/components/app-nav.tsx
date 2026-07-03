@@ -9,6 +9,7 @@ import {
   Sparkle,
   Translate,
   Path,
+  MagnifyingGlass,
   ClipboardText,
   type Icon,
 } from '@phosphor-icons/react';
@@ -33,6 +34,7 @@ const GROUPS: { label: string; items: NavItem[] }[] = [
     label: 'Applications',
     items: [
       { href: '/dashboard/tracks', label: 'Career tracks', icon: Path },
+      { href: '/dashboard/search', label: 'Find jobs', icon: MagnifyingGlass },
       { href: '/dashboard/jobs', label: 'Jobs', icon: ClipboardText },
     ],
   },

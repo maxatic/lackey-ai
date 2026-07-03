@@ -6,9 +6,6 @@ import { SEARCH_COUNTRIES, type JobSearchResult } from '@/lib/search/types';
 import { createJobFromSearch } from '@/lib/db/jobs';
 import { toActionError } from '@/lib/action-error';
 
-// Apify's sync run can take ~20-30s; Vercel's default function window is 10s.
-export const maxDuration = 60;
-
 export async function searchJobsAction(
   formData: FormData,
 ): Promise<{ results: JobSearchResult[]; errors: string[] } | { error: string }> {

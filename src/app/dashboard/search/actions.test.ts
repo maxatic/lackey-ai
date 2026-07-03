@@ -4,10 +4,16 @@ import { it, expect, vi, beforeEach } from 'vitest';
 const searchJobsMock = vi.fn();
 const createJobFromSearchMock = vi.fn();
 vi.mock('@/lib/search', () => ({ searchJobs: (q: any) => searchJobsMock(q) }));
-vi.mock('@/lib/db/jobs', () => ({ createJobFromSearch: (r: any) => createJobFromSearchMock(r) }));
+vi.mock('@/lib/db/jobs', () => ({
+  createJobFromSearch: (r: any) => createJobFromSearchMock(r),
+  listSavedSourceIds: vi.fn(async () => []),
+}));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
-import { searchJobsAction, saveSearchResultAction, maxDuration } from './actions';
+import { searchJobsAction, saveSearchResultAction } from './actions';
+// maxDuration lives on the route segment (page), not the 'use server' file —
+// Next.js forbids non-async exports there. Actions inherit the route's config.
+import { maxDuration } from './page';
 
 const GOOD = {
   source: 'adzuna', source_id: '5001', title: 'Dev', company: 'ACME',
