@@ -66,7 +66,7 @@ export async function suggestPoints(jd: ParsedJd, snapshot: TrackSnapshot): Prom
     system: [
       'You select cover-letter talking points by matching a candidate\'s CV data to a job description.',
       'HARD RULES: never invent experience, skills, or achievements. Every point must be directly supported by the referenced entry (its title, organization, summary, or bullets).',
-      'Propose 6 to 8 points, most compelling first. Each point is one concrete sentence in the first person.',
+      'Propose 6 to 8 points, most compelling first. Each point is one concrete sentence in the first person, written in German.',
     ].join(' '),
     user: `JOB DESCRIPTION (parsed):\n${JSON.stringify(jd, null, 2)}\n\nCANDIDATE CV DATA (with entry ids):\n${serializeSnapshot(snapshot)}`,
     toolName: 'record_letter_points',

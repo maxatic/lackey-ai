@@ -129,10 +129,10 @@ export function MarketingFooter() {
           </p>
 
           <Link
-            href="/sign-up"
+            href="/dashboard"
             className="group mt-9 inline-flex items-center justify-center gap-2 rounded-full bg-[#f2eee1] px-8 py-4 text-base font-semibold text-[var(--espresso)] shadow-[0_18px_40px_-14px_rgba(0,0,0,0.5)] transition-transform duration-200 ease-out will-change-transform hover:-translate-y-0.5 hover:scale-[1.03] active:translate-y-0"
           >
-            Start free
+            Open workspace
             <span
               aria-hidden
               className="transition-transform duration-200 group-hover:translate-x-1"
@@ -172,7 +172,7 @@ export function MarketingFooter() {
             <ul className="mt-4 space-y-2.5">
               <li>
                 <Link
-                  href="/sign-in"
+                  href="/dashboard"
                   className="text-[0.95rem] text-[#a8b3a0] transition-colors hover:text-[#f2eee1]"
                 >
                   Sign in
@@ -180,10 +180,10 @@ export function MarketingFooter() {
               </li>
               <li>
                 <Link
-                  href="/sign-up"
+                  href="/dashboard"
                   className="text-[0.95rem] text-[#a8b3a0] transition-colors hover:text-[#f2eee1]"
                 >
-                  Start free
+                  Open workspace
                 </Link>
               </li>
             </ul>

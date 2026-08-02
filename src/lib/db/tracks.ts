@@ -1,5 +1,5 @@
 // src/lib/db/tracks.ts
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ensureUser } from '@/lib/auth/ensure-user';
 import type { Database } from '@/lib/db/database.types';
@@ -12,10 +12,12 @@ export type TrackInput = Omit<
 >;
 
 export async function listTracks(): Promise<Track[]> {
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('career_tracks')
     .select('*')
+    .eq('user_id', userId)
     .order('sort_order', { ascending: true });
   if (error) throw error;
   return data ?? [];
@@ -23,8 +25,7 @@ export async function listTracks(): Promise<Track[]> {
 
 export async function createTrack(input: TrackInput): Promise<Track> {
   await ensureUser();
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('career_tracks')
@@ -55,8 +56,14 @@ export async function deleteTrack(id: string): Promise<void> {
 }
 
 export async function getTrack(id: string): Promise<Track | null> {
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.from('career_tracks').select('*').eq('id', id).maybeSingle();
+  const { data, error } = await supabase
+    .from('career_tracks')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', userId)
+    .maybeSingle();
   if (error) throw error;
   return data ?? null;
 }

@@ -32,8 +32,9 @@ vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: async () => fakeClient,
 }));
 vi.mock('@/lib/auth/ensure-user', () => ({ ensureUser: async () => {} }));
-vi.mock('@clerk/nextjs/server', () => ({
-  auth: async () => ({ userId: USER_ID }),
+vi.mock('@/lib/auth/local-user', () => ({
+  getUserId: () => USER_ID,
+  LOCAL_USER_NAME: 'Maxat Issaliyev',
 }));
 
 import { getProfile, upsertProfile } from './profile';

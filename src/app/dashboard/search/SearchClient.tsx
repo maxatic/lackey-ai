@@ -2,7 +2,8 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { MagnifyingGlass, ArrowSquareOut, Check, Plus } from '@phosphor-icons/react';
-import { SEARCH_COUNTRIES, type JobSearchResult } from '@/lib/search/types';
+import { MARKET_COUNTRY_LABEL } from '@/lib/market';
+import type { JobSearchResult } from '@/lib/search/types';
 import { searchJobsAction, saveSearchResultAction } from './actions';
 
 export function SearchClient({ initialSavedKeys }: { initialSavedKeys: string[] }) {
@@ -53,14 +54,7 @@ export function SearchClient({ initialSavedKeys }: { initialSavedKeys: string[] 
             className="field"
           />
         </div>
-        <div>
-          <label htmlFor="search-country" className="field-label">Country</label>
-          <select id="search-country" name="country" defaultValue="de" className="field !w-auto">
-            {SEARCH_COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>{c.label}</option>
-            ))}
-          </select>
-        </div>
+        <p className="pb-2 text-sm text-[var(--ink-soft)]">Searching in {MARKET_COUNTRY_LABEL}</p>
         <label className="flex items-center gap-2 pb-2 text-sm text-[var(--ink)]">
           <input type="checkbox" name="remote" /> Remote only
         </label>

@@ -1,7 +1,8 @@
 'use client';
 import { useTransition, useState } from 'react';
 import { FilePdf } from '@phosphor-icons/react';
-import { CV_LOCALES, type CvLocale } from '@/lib/cv/types';
+import { DEFAULT_CV_LOCALE } from '@/lib/market';
+import type { CvLocale } from '@/lib/cv/types';
 import { generateCv, getSignedDownloadUrl } from './generate-cv/actions';
 
 interface CvDocStub {
@@ -36,7 +37,7 @@ function RedownloadButton({ storagePath }: { storagePath: string }) {
 }
 
 export function GenerateCv({ trackId, defaultLocale, existingDocs = [] }: Props) {
-  const [locale, setLocale] = useState<CvLocale>(defaultLocale);
+  const locale = DEFAULT_CV_LOCALE satisfies CvLocale;
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -62,26 +63,11 @@ export function GenerateCv({ trackId, defaultLocale, existingDocs = [] }: Props)
   return (
     <div className="mt-6 flex flex-col gap-6">
       <form onSubmit={handleSubmit} className="app-card flex flex-col gap-4 p-5">
-        <h2 className="section-title">Generate CV</h2>
+        <h2 className="section-title">Lebenslauf generieren</h2>
         <div className="flex flex-wrap items-center gap-3">
-          <label htmlFor="cv-locale" className="field-label !mb-0">
-            Locale
-          </label>
-          <select
-            id="cv-locale"
-            value={locale}
-            onChange={(e) => setLocale(e.target.value as CvLocale)}
-            className="field !w-auto"
-          >
-            {CV_LOCALES.map((l) => (
-              <option key={l} value={l}>
-                {l.toUpperCase()}
-              </option>
-            ))}
-          </select>
           <button type="submit" disabled={isPending} className="btn btn-primary">
             <FilePdf className="h-4 w-4" weight="bold" />
-            {isPending ? 'Generating…' : 'Generate PDF'}
+            {isPending ? 'Generating…' : 'Generate PDF (DE)'}
           </button>
         </div>
         {error && <p className="form-error">{error}</p>}

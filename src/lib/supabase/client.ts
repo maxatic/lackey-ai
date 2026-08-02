@@ -2,17 +2,16 @@ import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/db/database.types';
 
-// Pass session?.getToken from `useSession()` (Clerk v6). Called inside a component / useMemo.
-// Plain @supabase/supabase-js createClient + accessToken — NOT @supabase/ssr's
-// createBrowserClient, whose cookie helpers access supabase.auth.onAuthStateChange,
-// which throws when accessToken mode is set.
-export function createBrowserSupabaseClient(
-  getToken: () => Promise<string | null>,
-): SupabaseClient<Database> {
+/**
+ * Browser helper for local single-user mode. Prefer server actions for data
+ * access; this exists only if a client component needs direct Supabase calls.
+ * Uses the anon key — server paths use the service role instead.
+ */
+export function createBrowserSupabaseClient(): SupabaseClient<Database> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anon) throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
-  return createClient<Database>(url, anon, {
-    accessToken: async () => (await getToken()) ?? null,
-  });
+  if (!url || !anon) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  }
+  return createClient<Database>(url, anon);
 }

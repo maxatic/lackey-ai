@@ -1,7 +1,7 @@
 'use client';
 import { useMemo, useState, useTransition } from 'react';
 import { Check, X, Sparkle, FilePdf } from '@phosphor-icons/react';
-import { CV_LOCALES, type CvLocale } from '@/lib/cv/types';
+import { DEFAULT_CV_LOCALE } from '@/lib/market';
 import type { CvSuggestions } from '@/lib/cv/suggest';
 import type { TrackSnapshot } from '@/lib/cv/data';
 import { suggestTailoringAction, generateNodeCvAction } from './tailor/actions';
@@ -76,7 +76,7 @@ function RedownloadButton({ storagePath }: { storagePath: string }) {
 
 export function TailorCv({ jobId, tracks, existingDocs }: Props) {
   const [trackId, setTrackId] = useState(tracks[0]?.id ?? '');
-  const [locale, setLocale] = useState<CvLocale>('uk');
+  const locale = DEFAULT_CV_LOCALE;
   const [result, setResult] = useState<{ suggestions: CvSuggestions; snapshot: TrackSnapshot } | null>(null);
   const [accepted, setAccepted] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
@@ -195,13 +195,9 @@ export function TailorCv({ jobId, tracks, existingDocs }: Props) {
             </ul>
           )}
           <div className="flex flex-wrap items-center gap-3 border-t border-[var(--line)]/60 pt-4">
-            <label htmlFor="node-locale" className="field-label !mb-0">Locale</label>
-            <select id="node-locale" value={locale} onChange={(e) => setLocale(e.target.value as CvLocale)} className="field !w-auto">
-              {CV_LOCALES.map((l) => <option key={l} value={l}>{l.toUpperCase()}</option>)}
-            </select>
             <button type="button" onClick={generate} disabled={isPending} className="btn btn-primary">
               <FilePdf className="h-4 w-4" weight="bold" />
-              {isPending ? 'Generating…' : 'Save & generate PDF'}
+              {isPending ? 'Generating…' : 'Save & generate PDF (DE)'}
             </button>
             {downloadUrl && (
               <a href={downloadUrl} target="_blank" rel="noreferrer" className="action-link">

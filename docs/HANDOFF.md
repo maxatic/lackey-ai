@@ -1,9 +1,17 @@
 # Lackey AI — Handoff
 
-**As of:** 2026-07-03 (Phase 8 Job Search merged — phases 0–5 + 8 done; only 6/7 [interview prep] remain on the roadmap)
-**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main` — **push pending** (Phase 8 + docs), run `git push` to deploy
+**As of:** 2026-08-02 — **local single-user mode** (Clerk removed). Open `/dashboard` with no login; identity is fixed to Maxat Issaliyev (`local-maxat-issaliyev`, override with `LOCAL_USER_ID`). Supabase uses `SUPABASE_SERVICE_ROLE_KEY` (localhost personal use only — do not expose publicly).
 
-> ## ▶ RESUME HERE
+> ## ▶ RESUME HERE (local)
+> 1. Put `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` (see `.env.example`).
+> 2. `npm install` → `npm run dev` → http://localhost:3000/dashboard
+> 3. Optional AI/search/PDF keys: `ANTHROPIC_API_KEY`, Adzuna/Apify, `COMPILE_SERVICE_*`.
+> 4. Existing cloud rows under an old Clerk `user_…` id: set `LOCAL_USER_ID` to that id to reclaim them.
+
+**Prior handoff (2026-07-03):** Phase 8 Job Search merged — phases 0–5 + 8 done; only 6/7 [interview prep] remain on the roadmap
+**Repo:** https://github.com/maxatic/lackey-ai (private) · branch `main`
+
+> ## ▶ RESUME HERE (historical SaaS notes)
 > **Phase 8 (Job Search) is done and merged.** New **Find jobs** page (`/dashboard/search`): keywords + EU country + remote → merged results from **Hiring Cafe** (via Apify actor `memo23~apify-hiring-cafe-scraper`, unofficial, ~$0.03/search) and **Adzuna** (official, free) with per-source degradation → **Save to Jobs** maps a result straight into the pipeline at Saved (AI-free, idempotent via `(user_id, source, source_id)` unique index). 210/210 tests; final review FIX-THEN-SHIP, fix applied (mappers reject non-http(s) URLs — render-path `javascript:` vector). Migration `0007` applied to the live DB. EURES was dropped (its ToS forbids automated extraction).
 > **NEW ops step — search needs API keys:** create free accounts and set `APIFY_TOKEN` (apify.com) + `ADZUNA_APP_ID`/`ADZUNA_APP_KEY` (developer.adzuna.com) in `.env.local` AND Vercel. Without them each source degrades with a clean "unavailable" notice. **Post-deploy smoke:** run one real search per source; if the Hiring Cafe mapper misses fields (unofficial API), capture real JSON into `src/lib/search/__fixtures__/hiringcafe.json` and adjust `mapHiringCafe` — fixture tests make that a 10-minute fix.
 > **Ops still pending from before:** `ANTHROPIC_API_KEY` in Vercel (all AI features); Fly compile-service deploy (PDFs); master-CV double-generate smoke once Fly is up.

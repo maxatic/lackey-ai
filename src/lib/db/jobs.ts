@@ -1,5 +1,5 @@
 // src/lib/db/jobs.ts
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ensureUser } from '@/lib/auth/ensure-user';
 import type { Database, Json } from '@/lib/db/database.types';
@@ -9,10 +9,12 @@ import type { JobSearchResult } from '@/lib/search/types';
 export type Job = Database['public']['Tables']['job_descriptions']['Row'];
 
 export async function listJobs(): Promise<Job[]> {
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('job_descriptions')
     .select('*')
+    .eq('user_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data ?? [];
@@ -25,8 +27,7 @@ export async function createJob(input: {
   parsed: Json;
 }): Promise<Job> {
   await ensureUser();
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('job_descriptions')
@@ -39,8 +40,7 @@ export async function createJob(input: {
 
 export async function createJobFromSearch(result: JobSearchResult): Promise<Job> {
   await ensureUser();
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('job_descriptions')
@@ -68,6 +68,7 @@ export async function createJobFromSearch(result: JobSearchResult): Promise<Job>
     const { data: existing, error: readError } = await supabase
       .from('job_descriptions')
       .select('*')
+      .eq('user_id', userId)
       .eq('source', result.source)
       .eq('source_id', result.source_id)
       .maybeSingle();
@@ -78,21 +79,25 @@ export async function createJobFromSearch(result: JobSearchResult): Promise<Job>
 }
 
 export async function listSavedSourceIds(): Promise<{ source: string; source_id: string }[]> {
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('job_descriptions')
     .select('source, source_id')
+    .eq('user_id', userId)
     .not('source', 'is', null);
   if (error) throw error;
   return (data ?? []).filter((r): r is { source: string; source_id: string } => !!r.source && !!r.source_id);
 }
 
 export async function getJob(id: string): Promise<Job | null> {
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('job_descriptions')
     .select('*')
     .eq('id', id)
+    .eq('user_id', userId)
     .maybeSingle();
   if (error) throw error;
   return data ?? null;

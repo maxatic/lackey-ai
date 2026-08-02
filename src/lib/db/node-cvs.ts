@@ -1,5 +1,5 @@
 // src/lib/db/node-cvs.ts
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ensureUser } from '@/lib/auth/ensure-user';
 import type { Database, Json } from '@/lib/db/database.types';
@@ -12,8 +12,7 @@ export async function upsertNodeCv(input: {
   overrides: Json;
 }): Promise<NodeCv> {
   await ensureUser();
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('node_cvs')
@@ -28,10 +27,12 @@ export async function upsertNodeCv(input: {
 }
 
 export async function getNodeCv(jobId: string, trackId: string): Promise<NodeCv | null> {
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('node_cvs')
     .select('*')
+    .eq('user_id', userId)
     .eq('job_id', jobId)
     .eq('track_id', trackId)
     .maybeSingle();

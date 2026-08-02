@@ -25,7 +25,7 @@ it('passes ONLY the given points and profile basics into the prompt', async () =
   expect(opts.user).toContain('Built x at ACME');
   expect(opts.user).toContain('A B');
   expect(opts.system).toMatch(/only.*points|points.*only/i);
-  expect(opts.system).toMatch(/english/i);
+  expect(opts.system).toMatch(/german/i);
 });
 
 it('validator rejects empty/blank body (retry path)', async () => {

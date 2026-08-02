@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { Track } from '@/lib/db/tracks';
+import { DEFAULT_TRACK_LOCALE } from '@/lib/market';
 
 type Props = {
   track?: Track;
@@ -54,21 +55,7 @@ export function TrackForm({ track, action, submitLabel }: Props) {
         />
       </label>
 
-      <label className="block">
-        <span className="field-label">Default locale</span>
-        <select
-          name="default_locale"
-          defaultValue={track?.default_locale ?? 'en-GB'}
-          className="field !w-auto"
-        >
-          <option value="en-GB">en-GB</option>
-          <option value="en-US">en-US</option>
-          <option value="de-DE">de-DE</option>
-          <option value="de-AT">de-AT</option>
-          <option value="de-CH">de-CH</option>
-          <option value="fr-FR">fr-FR</option>
-        </select>
-      </label>
+      <input type="hidden" name="default_locale" value={track?.default_locale ?? DEFAULT_TRACK_LOCALE} />
 
       <label className="block">
         <span className="field-label">Default template</span>

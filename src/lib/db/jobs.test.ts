@@ -92,7 +92,7 @@ vi.mock('@/lib/supabase/server', () => ({
   })),
 }));
 vi.mock('@/lib/auth/ensure-user', () => ({ ensureUser: vi.fn(async () => {}) }));
-vi.mock('@clerk/nextjs/server', () => ({ auth: vi.fn(async () => ({ userId: 'user_1' })) }));
+vi.mock('@/lib/auth/local-user', () => ({ getUserId: () => 'user_1', LOCAL_USER_NAME: 'Maxat Issaliyev' }));
 
 import {
   listJobs,

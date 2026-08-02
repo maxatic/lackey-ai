@@ -1,4 +1,4 @@
-// src/app/dashboard/entries/[id]/actions.ts
+// src/app/dashboard/entries/item/[id]/actions.ts
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -17,11 +17,15 @@ function parseTags(raw: FormDataEntryValue | null): string[] {
     .filter(Boolean);
 }
 
+function revalidateEntryBullets(entryId: string) {
+  revalidatePath(`/dashboard/entries/item/${entryId}`);
+}
+
 export async function createBulletAction(entryId: string, formData: FormData): Promise<void> {
   const text = String(formData.get('text') ?? '').trim();
   if (!text) return;
   await createBullet({ entry_id: entryId, text, tags: parseTags(formData.get('tags')) });
-  revalidatePath(`/dashboard/entries/${entryId}`);
+  revalidateEntryBullets(entryId);
 }
 
 export async function updateBulletAction(
@@ -32,15 +36,15 @@ export async function updateBulletAction(
   const text = String(formData.get('text') ?? '').trim();
   if (!text) return;
   await updateBullet(bulletId, { text, tags: parseTags(formData.get('tags')) });
-  revalidatePath(`/dashboard/entries/${entryId}`);
+  revalidateEntryBullets(entryId);
 }
 
 export async function deleteBulletAction(entryId: string, bulletId: string): Promise<void> {
   await deleteBullet(bulletId);
-  revalidatePath(`/dashboard/entries/${entryId}`);
+  revalidateEntryBullets(entryId);
 }
 
 export async function reorderBulletsAction(entryId: string, orderedIds: string[]): Promise<void> {
   await reorderBullets(entryId, orderedIds);
-  revalidatePath(`/dashboard/entries/${entryId}`);
+  revalidateEntryBullets(entryId);
 }

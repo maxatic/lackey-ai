@@ -1,12 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const upsert = vi.fn().mockResolvedValue({ error: null });
-const from = vi.fn(() => ({ upsert }));
-const authMock = vi.fn();
+const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+const eq = vi.fn(() => ({ maybeSingle }));
+const select = vi.fn(() => ({ eq }));
+const from = vi.fn(() => ({ upsert, select }));
 const captureException = vi.fn();
 
-vi.mock('@clerk/nextjs/server', () => ({
-  auth: () => authMock(),
+vi.mock('@/lib/auth/local-user', () => ({
+  getUserId: () => 'local-maxat-issaliyev',
+  LOCAL_USER_NAME: 'Maxat Issaliyev',
+  DEFAULT_LOCAL_USER_ID: 'local-maxat-issaliyev',
 }));
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: async () => ({ from }),
@@ -21,43 +25,48 @@ describe('ensureUser', () => {
   beforeEach(() => {
     upsert.mockClear();
     upsert.mockResolvedValue({ error: null });
+    maybeSingle.mockClear();
+    maybeSingle.mockResolvedValue({ data: null, error: null });
     from.mockClear();
-    authMock.mockReset();
     captureException.mockClear();
   });
 
-  it('upserts the users row keyed on id with onConflict', async () => {
-    authMock.mockResolvedValue({ userId: 'user_abc' });
+  it('upserts the users row and seeds personal_profile when missing', async () => {
     await ensureUser();
 
     expect(from).toHaveBeenCalledWith('users');
     expect(upsert).toHaveBeenCalledWith(
-      { id: 'user_abc' },
+      { id: 'local-maxat-issaliyev' },
+      { onConflict: 'id', ignoreDuplicates: true },
+    );
+    expect(from).toHaveBeenCalledWith('personal_profile');
+    expect(upsert).toHaveBeenCalledWith(
+      { user_id: 'local-maxat-issaliyev', full_name: 'Maxat Issaliyev' },
+      { onConflict: 'user_id', ignoreDuplicates: true },
+    );
+  });
+
+  it('does not re-seed profile when one already exists', async () => {
+    maybeSingle.mockResolvedValueOnce({ data: { user_id: 'local-maxat-issaliyev' }, error: null });
+    await ensureUser();
+
+    expect(upsert).toHaveBeenCalledTimes(1);
+    expect(upsert).toHaveBeenCalledWith(
+      { id: 'local-maxat-issaliyev' },
       { onConflict: 'id', ignoreDuplicates: true },
     );
   });
 
-  it('is idempotent: calling twice issues an upsert each time, both keyed on id', async () => {
-    authMock.mockResolvedValue({ userId: 'user_abc' });
+  it('is idempotent: calling twice issues a users upsert each time', async () => {
+    maybeSingle.mockResolvedValue({ data: { user_id: 'local-maxat-issaliyev' }, error: null });
     await ensureUser();
     await ensureUser();
 
     expect(upsert).toHaveBeenCalledTimes(2);
-    for (const call of upsert.mock.calls) {
-      expect(call[0]).toEqual({ id: 'user_abc' });
-      expect(call[1]).toEqual({ onConflict: 'id', ignoreDuplicates: true });
-    }
-  });
-
-  it('no-ops when there is no authenticated user', async () => {
-    authMock.mockResolvedValue({ userId: null });
-    await ensureUser();
-    expect(from).not.toHaveBeenCalled();
   });
 
   it('does not throw and reports to Sentry when the upsert errors', async () => {
-    authMock.mockResolvedValue({ userId: 'user_abc' });
-    upsert.mockResolvedValueOnce({ error: new Error('rls denied') });
+    upsert.mockResolvedValueOnce({ error: new Error('db denied') });
     await expect(ensureUser()).resolves.toBeUndefined();
     expect(captureException).toHaveBeenCalledOnce();
   });

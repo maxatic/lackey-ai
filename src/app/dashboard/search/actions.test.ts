@@ -30,21 +30,20 @@ it('exports maxDuration for the Apify sync call', () => {
   expect(maxDuration).toBe(60);
 });
 
-it('searchJobsAction passes the query through and returns results+errors', async () => {
+it('searchJobsAction searches Germany only and returns results+errors', async () => {
   searchJobsMock.mockResolvedValue({ results: [GOOD], errors: ['Adzuna unavailable'] });
   const fd = new FormData();
   fd.set('keywords', 'react developer');
-  fd.set('country', 'nl');
   fd.set('remote', 'on');
   await expect(searchJobsAction(fd)).resolves.toEqual({ results: [GOOD], errors: ['Adzuna unavailable'] });
-  expect(searchJobsMock).toHaveBeenCalledWith({ keywords: 'react developer', country: 'nl', remote: true });
+  expect(searchJobsMock).toHaveBeenCalledWith({ keywords: 'react developer', country: 'de', remote: true });
 });
 
-it('searchJobsAction falls back to de for an unknown country and remote off', async () => {
+it('searchJobsAction ignores any country field and always uses de', async () => {
   searchJobsMock.mockResolvedValue({ results: [], errors: [] });
   const fd = new FormData();
   fd.set('keywords', 'react');
-  fd.set('country', 'zz');
+  fd.set('country', 'nl');
   await searchJobsAction(fd);
   expect(searchJobsMock).toHaveBeenCalledWith({ keywords: 'react', country: 'de', remote: false });
 });

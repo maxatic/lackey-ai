@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import * as Sentry from '@sentry/nextjs';
 import {
   UserCircle,
@@ -19,16 +19,14 @@ import { listTracks } from '@/lib/db/tracks';
 import { listJobs } from '@/lib/db/jobs';
 
 export default async function DashboardPage() {
-  const { userId } = await auth();
-  if (userId) {
-    // ponytail: telemetry must never crash the page — report and move on.
-    try {
-      const ph = getPostHogServer();
-      ph.capture({ distinctId: userId, event: 'dashboard_viewed' });
-      await ph.flush();
-    } catch (err) {
-      Sentry.captureException(err);
-    }
+  const userId = getUserId();
+  // ponytail: telemetry must never crash the page — report and move on.
+  try {
+    const ph = getPostHogServer();
+    ph.capture({ distinctId: userId, event: 'dashboard_viewed' });
+    await ph.flush();
+  } catch (err) {
+    Sentry.captureException(err);
   }
 
   const [profile, entries, skills, languages, tracks, jobs] = await Promise.all([
@@ -62,7 +60,7 @@ export default async function DashboardPage() {
       icon: Translate,
       label: 'Languages',
       count: languages.length,
-      blurb: 'CEFR levels, shown the way each country expects.',
+      blurb: 'CEFR levels, shown the way German employers expect.',
     },
     {
       href: '/dashboard/tracks',

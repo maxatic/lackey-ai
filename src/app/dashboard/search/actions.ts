@@ -2,7 +2,8 @@
 import { revalidatePath } from 'next/cache';
 import { searchJobs } from '@/lib/search';
 import { sanitizeSearchResult } from '@/lib/search/sanitize';
-import { SEARCH_COUNTRIES, type JobSearchResult } from '@/lib/search/types';
+import { MARKET_COUNTRY } from '@/lib/market';
+import type { JobSearchResult } from '@/lib/search/types';
 import { createJobFromSearch } from '@/lib/db/jobs';
 import { toActionError } from '@/lib/action-error';
 
@@ -11,10 +12,8 @@ export async function searchJobsAction(
 ): Promise<{ results: JobSearchResult[]; errors: string[] } | { error: string }> {
   try {
     const keywords = String(formData.get('keywords') ?? '');
-    const countryRaw = String(formData.get('country') ?? '');
-    const country = SEARCH_COUNTRIES.some((c) => c.code === countryRaw) ? countryRaw : 'de';
     const remote = formData.get('remote') === 'on';
-    return await searchJobs({ keywords, country, remote });
+    return await searchJobs({ keywords, country: MARKET_COUNTRY, remote });
   } catch (err) {
     return { error: toActionError(err) };
   }

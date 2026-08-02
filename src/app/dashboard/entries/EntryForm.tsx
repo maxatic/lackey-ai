@@ -6,31 +6,38 @@ import type { Entry } from '@/lib/db/entries';
 
 type Props = {
   entry?: Entry;
+  fixedKind?: EntryKind;
   action: (formData: FormData) => void | Promise<void>;
   submitLabel: string;
 };
 
-export default function EntryForm({ entry, action, submitLabel }: Props) {
-  const [kind, setKind] = useState<EntryKind>((entry?.kind as EntryKind) ?? 'experience');
+export default function EntryForm({ entry, fixedKind, action, submitLabel }: Props) {
+  const [kind, setKind] = useState<EntryKind>(
+    fixedKind ?? (entry?.kind as EntryKind) ?? 'experience',
+  );
   const details = (entry?.details ?? {}) as Record<string, string>;
 
   return (
     <form action={action} className="space-y-4">
       {entry && <input type="hidden" name="id" value={entry.id} />}
 
-      <label className="block">
-        <span className="field-label">Kind</span>
-        <select
-          name="kind"
-          value={kind}
-          onChange={(e) => setKind(e.target.value as EntryKind)}
-          className="field"
-        >
-          {ENTRY_KINDS.map((k) => (
-            <option key={k} value={k}>{KIND_LABELS[k]}</option>
-          ))}
-        </select>
-      </label>
+      {fixedKind ? (
+        <input type="hidden" name="kind" value={fixedKind} />
+      ) : (
+        <label className="block">
+          <span className="field-label">Kind</span>
+          <select
+            name="kind"
+            value={kind}
+            onChange={(e) => setKind(e.target.value as EntryKind)}
+            className="field"
+          >
+            {ENTRY_KINDS.map((k) => (
+              <option key={k} value={k}>{KIND_LABELS[k]}</option>
+            ))}
+          </select>
+        </label>
+      )}
 
       <label className="block">
         <span className="field-label">Title</span>

@@ -1,21 +1,15 @@
+import type { CvLocale } from '@/lib/cv/types';
+import { MARKET_COUNTRY, MARKET_COUNTRY_LABEL } from '@/lib/market';
+
 // Client-safe search types + constants. No server imports.
 export type JobSearchQuery = {
   keywords: string; // trimmed, 2..200 chars (validated in searchJobs)
-  country: string;  // ISO-3166 alpha-2 from SEARCH_COUNTRIES
+  country: string;  // ISO-3166 alpha-2 — Germany-only for now
   remote: boolean;
 };
 
 export const SEARCH_COUNTRIES = [
-  { code: 'de', label: 'Germany' },
-  { code: 'nl', label: 'Netherlands' },
-  { code: 'fr', label: 'France' },
-  { code: 'at', label: 'Austria' },
-  { code: 'be', label: 'Belgium' },
-  { code: 'es', label: 'Spain' },
-  { code: 'it', label: 'Italy' },
-  { code: 'pl', label: 'Poland' },
-  { code: 'ie', label: 'Ireland' },
-  { code: 'gb', label: 'United Kingdom' },
+  { code: MARKET_COUNTRY, label: MARKET_COUNTRY_LABEL },
 ] as const;
 
 export type JobSearchSource = 'hiringcafe' | 'adzuna';

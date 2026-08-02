@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ensureUser } from '@/lib/auth/ensure-user';
 import type { Database } from '@/lib/db/database.types';
@@ -10,10 +10,12 @@ export type SkillInput = Omit<
 >;
 
 export async function listSkills(): Promise<Skill[]> {
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('skills')
     .select('*')
+    .eq('user_id', userId)
     .order('sort_order', { ascending: true });
   if (error) throw error;
   return data ?? [];
@@ -21,8 +23,7 @@ export async function listSkills(): Promise<Skill[]> {
 
 export async function createSkill(input: SkillInput): Promise<Skill> {
   await ensureUser();
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('skills')

@@ -42,8 +42,9 @@ vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: vi.fn(async () => client),
 }));
 vi.mock('@/lib/auth/ensure-user', () => ({ ensureUser: vi.fn(async () => {}) }));
-vi.mock('@clerk/nextjs/server', () => ({
-  auth: vi.fn(async () => ({ userId: USER_ID })),
+vi.mock('@/lib/auth/local-user', () => ({
+  getUserId: () => USER_ID,
+  LOCAL_USER_NAME: 'Maxat Issaliyev',
 }));
 
 import { listEntries, createEntry, updateEntry, deleteEntry } from './entries';
@@ -55,18 +56,19 @@ beforeEach(() => {
 });
 
 describe('listEntries', () => {
-  it('selects all entries ordered by sort_order, no kind filter', async () => {
+  it('selects entries for the local user ordered by sort_order, no kind filter', async () => {
     result.data = [{ id: 'e1', kind: 'experience', title: 'Dev', details: {} }];
     const rows = await listEntries();
     expect(calls).toContainEqual(['from', ['entries']]);
     expect(calls).toContainEqual(['select', ['*']]);
+    expect(calls).toContainEqual(['eq', ['user_id', USER_ID]]);
     expect(calls).toContainEqual(['order', ['sort_order', { ascending: true }]]);
-    expect(calls.some(([m]) => m === 'eq')).toBe(false);
     expect(rows).toHaveLength(1);
   });
 
   it('filters by kind when provided', async () => {
     await listEntries('education');
+    expect(calls).toContainEqual(['eq', ['user_id', USER_ID]]);
     expect(calls).toContainEqual(['eq', ['kind', 'education']]);
     expect(calls).toContainEqual(['order', ['sort_order', { ascending: true }]]);
   });

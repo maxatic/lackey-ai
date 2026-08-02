@@ -39,21 +39,33 @@ function parseForm(formData: FormData): EntryInput {
   };
 }
 
-export async function createEntryAction(formData: FormData): Promise<void> {
-  await createEntry(parseForm(formData));
+function revalidateEntries(kind: EntryKind) {
   revalidatePath('/dashboard/entries');
+  revalidatePath(`/dashboard/entries/${kind}`);
+}
+
+export async function createEntryAction(formData: FormData): Promise<void> {
+  const input = parseForm(formData);
+  await createEntry(input);
+  revalidateEntries(input.kind);
 }
 
 export async function updateEntryAction(formData: FormData): Promise<void> {
   const id = String(formData.get('id') ?? '');
   if (!id) throw new Error('Missing entry id');
-  await updateEntry(id, parseForm(formData));
-  revalidatePath('/dashboard/entries');
+  const input = parseForm(formData);
+  await updateEntry(id, input);
+  revalidateEntries(input.kind);
 }
 
 export async function deleteEntryAction(formData: FormData): Promise<void> {
   const id = String(formData.get('id') ?? '');
   if (!id) throw new Error('Missing entry id');
+  const kind = String(formData.get('kind') ?? '') as EntryKind;
   await deleteEntry(id);
-  revalidatePath('/dashboard/entries');
+  if (ENTRY_KINDS.includes(kind)) {
+    revalidateEntries(kind);
+  } else {
+    revalidatePath('/dashboard/entries');
+  }
 }

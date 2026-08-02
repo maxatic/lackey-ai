@@ -4,7 +4,7 @@ import { mapHiringCafe, searchHiringCafe } from './hiringcafe';
 
 const fetchMock = vi.fn();
 vi.stubGlobal('fetch', fetchMock);
-const Q = { keywords: 'react', country: 'nl', remote: true };
+const Q = { keywords: 'react', country: 'de', remote: true };
 
 describe('hiringcafe adapter', () => {
   beforeEach(() => {
@@ -45,13 +45,13 @@ describe('hiringcafe adapter', () => {
 
   it('searchHiringCafe POSTs the actor input and maps items', async () => {
     fetchMock.mockResolvedValue({ ok: true, json: async () => fixture });
-    const results = await searchHiringCafe({ keywords: 'react', country: 'nl', remote: true });
+    const results = await searchHiringCafe({ keywords: 'react', country: 'de', remote: true });
     expect(results).toHaveLength(2);
     const [url, init] = fetchMock.mock.calls[0];
     expect(String(url)).toContain('memo23~apify-hiring-cafe-scraper/run-sync-get-dataset-items');
     expect(String(url)).toContain('token=');
     const body = JSON.parse(init.body);
-    expect(body).toMatchObject({ keyword: 'react', location: 'Netherlands', workplaceType: 'Remote', maxItems: 25, enrichDescription: false });
+    expect(body).toMatchObject({ keyword: 'react', location: 'Germany', workplaceType: 'Remote', maxItems: 25, enrichDescription: false });
   });
 
   it('throws "Hiring Cafe unavailable" on missing APIFY_TOKEN / non-200', async () => {

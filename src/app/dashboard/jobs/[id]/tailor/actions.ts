@@ -1,6 +1,6 @@
 'use server';
 import { revalidatePath } from 'next/cache';
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getJob, advanceJobToPrepared } from '@/lib/db/jobs';
 import { buildTrackSnapshot, toCvData, type TrackSnapshot } from '@/lib/cv/data';
@@ -10,7 +10,8 @@ import { renderCv } from '@/lib/cv/render';
 import { compilePdf } from '@/lib/cv/compile';
 import { upsertNodeCv } from '@/lib/db/node-cvs';
 import { upsertCvDocument } from '@/lib/db/cv-documents';
-import { CV_LOCALES, type CvLocale } from '@/lib/cv/types';
+import { ACTIVE_CV_LOCALES, DEFAULT_CV_LOCALE } from '@/lib/market';
+import type { CvLocale } from '@/lib/cv/types';
 import { validateParsedJd } from '@/lib/jd/parse';
 import { toActionError } from '@/lib/action-error';
 
@@ -34,16 +35,15 @@ export async function suggestTailoringAction(
 export async function generateNodeCvAction(formData: FormData): Promise<{ url: string }> {
   const jobId = String(formData.get('job_id') ?? '');
   const trackId = String(formData.get('track_id') ?? '');
-  const locale = String(formData.get('locale') ?? '') as CvLocale;
+  const locale = String(formData.get('locale') ?? DEFAULT_CV_LOCALE) as CvLocale;
   if (!jobId || !trackId) throw new Error('Missing job or track');
-  if (!CV_LOCALES.includes(locale)) throw new Error('Invalid locale');
+  if (!ACTIVE_CV_LOCALES.includes(locale)) throw new Error('Invalid locale');
   // Trust boundary: overrides JSON comes from the client — sanitize.
   let overridesRaw: unknown = {};
   try { overridesRaw = JSON.parse(String(formData.get('overrides') ?? '{}')); } catch { /* {} */ }
   const overrides = validateOverrides(overridesRaw);
 
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
 
   await upsertNodeCv({ job_id: jobId, track_id: trackId, overrides });
 

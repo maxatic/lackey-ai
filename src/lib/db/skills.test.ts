@@ -22,7 +22,7 @@ vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: () => Promise.resolve({ from: fromMock }),
 }));
 vi.mock('@/lib/auth/ensure-user', () => ({ ensureUser: vi.fn(() => Promise.resolve()) }));
-vi.mock('@clerk/nextjs/server', () => ({ auth: () => Promise.resolve({ userId: 'u1' }) }));
+vi.mock('@/lib/auth/local-user', () => ({ getUserId: () => 'u1', LOCAL_USER_NAME: 'Maxat Issaliyev' }));
 
 import { listSkills, createSkill, updateSkill, deleteSkill } from './skills';
 

@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.109.0",
-    "@clerk/nextjs": "^6.39.5",
     "@gsap/react": "^2.1.2",
     "@phosphor-icons/react": "^2.1.10",
     "@sentry/nextjs": "^10.62.0",

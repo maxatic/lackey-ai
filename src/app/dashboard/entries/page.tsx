@@ -1,101 +1,61 @@
-import {
-  listEntries, ENTRY_KINDS, KIND_LABELS, type EntryKind, type Entry,
-} from '@/lib/db/entries';
-import { createEntryAction, updateEntryAction, deleteEntryAction } from './actions';
-import EntryForm from './EntryForm';
 import Link from 'next/link';
+import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
+import {
+  listEntries, ENTRY_KINDS, KIND_LABELS, KIND_DESCRIPTIONS,
+} from '@/lib/db/entries';
+import EntryKindNav from './EntryKindNav';
 
 export const dynamic = 'force-dynamic';
 
-export default async function EntriesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ edit?: string }>;
-}) {
-  const { edit } = await searchParams;
+export default async function EntriesPage() {
   const entries = await listEntries();
 
-  const byKind = new Map<EntryKind, Entry[]>();
+  const counts = new Map<string, number>();
   for (const e of entries) {
-    const list = byKind.get(e.kind as EntryKind) ?? [];
-    list.push(e);
-    byKind.set(e.kind as EntryKind, list);
+    counts.set(e.kind, (counts.get(e.kind) ?? 0) + 1);
   }
 
   return (
-    <div className="max-w-2xl space-y-10">
-      <header>
-        <p className="kicker">Your skeleton</p>
-        <h1 className="app-title mt-2">Entries</h1>
-        <p className="app-subtitle">
-          Work, education and projects. Each entry carries its own achievement
-          bullets, which Lackey reorders and rewords per job.
-        </p>
+    <div className="max-w-2xl space-y-8">
+      <header className="space-y-4">
+        <div>
+          <p className="kicker">Your skeleton</p>
+          <h1 className="app-title mt-2">Entries</h1>
+          <p className="app-subtitle">
+            Work, education and projects. Each entry carries its own achievement
+            bullets, which Lackey reorders and rewords per job.
+          </p>
+        </div>
+        <EntryKindNav />
       </header>
 
-      {entries.length === 0 && (
-        <div className="empty-state">
-          Nothing here yet. Add your first entry below — start with your most
-          recent role.
-        </div>
-      )}
-
-      {ENTRY_KINDS.map((kind) => {
-        const rows = byKind.get(kind) ?? [];
-        if (rows.length === 0) return null;
-        return (
-          <section key={kind}>
-            <h2 className="section-title">{KIND_LABELS[kind]}</h2>
-            <div className="app-card mt-3 overflow-hidden">
-              {rows.map((entry) =>
-                edit === entry.id ? (
-                  <div key={entry.id} className="border-t border-[var(--line)]/60 p-4 first:border-t-0">
-                    <EntryForm
-                      entry={entry}
-                      action={updateEntryAction}
-                      submitLabel="Save"
-                    />
-                  </div>
-                ) : (
-                  <div key={entry.id} className="app-row">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-[var(--ink)]">
-                        {entry.title}
-                      </p>
-                      {entry.organization && (
-                        <p className="truncate text-sm text-[var(--ink-soft)]">
-                          {entry.organization}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex shrink-0 items-center gap-3">
-                      <Link href={`/dashboard/entries/${entry.id}`} className="action-link">
-                        Bullets
-                      </Link>
-                      <Link href={`/dashboard/entries?edit=${entry.id}`} className="action-link">
-                        Edit
-                      </Link>
-                      <form action={deleteEntryAction}>
-                        <input type="hidden" name="id" value={entry.id} />
-                        <button type="submit" className="action-link action-link-danger">
-                          Delete
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </section>
-        );
-      })}
-
-      <section>
-        <h2 className="section-title">Add entry</h2>
-        <div className="app-card mt-3 p-5">
-          <EntryForm action={createEntryAction} submitLabel="Add entry" />
-        </div>
-      </section>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {ENTRY_KINDS.map((kind) => {
+          const count = counts.get(kind) ?? 0;
+          const label = KIND_LABELS[kind];
+          return (
+            <Link
+              key={kind}
+              href={`/dashboard/entries/${kind}`}
+              className="app-card group flex flex-col p-5 transition-transform duration-200 hover:-translate-y-0.5"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <p className="section-title">{label}</p>
+                <span className="font-display tabular text-xl font-semibold text-[var(--ink)]">
+                  {count}
+                </span>
+              </div>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-[var(--ink-soft)]">
+                {KIND_DESCRIPTIONS[kind]}
+              </p>
+              <span className="action-link mt-4 inline-flex items-center gap-1 no-underline">
+                Manage
+                <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

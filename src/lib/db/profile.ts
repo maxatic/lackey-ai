@@ -1,5 +1,5 @@
 // src/lib/db/profile.ts
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ensureUser } from '@/lib/auth/ensure-user';
 import type { Database } from '@/lib/db/database.types';
@@ -15,8 +15,7 @@ export type ProfileInput = Omit<
 >;
 
 async function requireUserId(): Promise<string> {
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
   return userId;
 }
 

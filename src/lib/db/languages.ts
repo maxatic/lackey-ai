@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ensureUser } from '@/lib/auth/ensure-user';
 import type { Database } from '@/lib/db/database.types';
@@ -12,10 +12,12 @@ export type LanguageInput = Omit<
 >;
 
 export async function listLanguages(): Promise<Language[]> {
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('languages')
     .select('*')
+    .eq('user_id', userId)
     .order('name', { ascending: true });
   if (error) throw error;
   return data ?? [];
@@ -23,8 +25,7 @@ export async function listLanguages(): Promise<Language[]> {
 
 export async function createLanguage(input: LanguageInput): Promise<Language> {
   await ensureUser();
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('languages')

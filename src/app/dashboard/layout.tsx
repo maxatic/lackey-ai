@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { UserButton } from '@clerk/nextjs';
 import { ArrowUpLeft } from '@phosphor-icons/react/dist/ssr';
 import { ensureUser } from '@/lib/auth/ensure-user';
+import { LOCAL_USER_NAME } from '@/lib/auth/local-user';
 import { Logo } from '@/components/marketing/logo';
 import { AppNav, AppNavMobile } from '@/components/app-nav';
 
@@ -23,7 +23,7 @@ export default async function DashboardLayout({
           <AppNav />
         </div>
         <div className="flex items-center justify-between gap-3 border-t border-[var(--line)] px-3 pt-5">
-          <UserButton />
+          <span className="truncate text-sm font-medium text-[var(--ink)]">{LOCAL_USER_NAME}</span>
           <Link
             href="/"
             className="inline-flex items-center gap-1 text-xs font-medium text-[var(--ink-soft)] transition-colors hover:text-[var(--ink)]"
@@ -40,7 +40,7 @@ export default async function DashboardLayout({
           <Link href="/dashboard" aria-label="Lackey AI dashboard">
             <Logo className="[&>span:last-child]:text-[1.15rem] [&>svg]:h-7 [&>svg]:w-7" />
           </Link>
-          <UserButton />
+          <span className="truncate text-sm font-medium text-[var(--ink-soft)]">{LOCAL_USER_NAME}</span>
         </div>
         <AppNavMobile />
       </header>

@@ -27,8 +27,8 @@ export function Hero() {
           delay={0.85}
           className="max-w-4xl font-display text-[2.9rem] font-semibold leading-[1.02] text-[var(--ink)] sm:text-6xl lg:text-7xl"
         >
-          A CV that fits the <span className="italic text-[var(--accent)]">country</span>{' '}
-          you are applying to.
+          A CV that fits the <span className="italic text-[var(--accent)]">German</span>{' '}
+          job market.
         </SplitReveal>
 
         <SplitReveal
@@ -38,17 +38,17 @@ export function Hero() {
           delay={1.25}
           className="mt-7 max-w-md text-lg leading-relaxed text-[var(--ink-soft)] sm:text-xl"
         >
-          Build your profile once. Lackey shapes it into locale-correct,
-          ATS-friendly CVs and cover letters for every EU market.
+          Build your profile once. Lackey shapes it into a proper Lebenslauf,
+          ATS-friendly cover letters, and tailored applications for Germany.
         </SplitReveal>
 
         <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
           <Magnetic strength={0.5}>
             <Link
-              href="/sign-up"
+              href="/dashboard"
               className="group inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-7 py-4 text-base font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.25)_inset,0_16px_34px_-12px_rgba(46,92,70,0.6)] transition-colors duration-200 hover:bg-[var(--accent-ink)]"
             >
-              Start free
+              Open workspace
               <ArrowRight
                 weight="bold"
                 className="h-[1.05rem] w-[1.05rem] transition-transform duration-200 group-hover:translate-x-1"

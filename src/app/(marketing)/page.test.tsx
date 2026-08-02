@@ -6,7 +6,8 @@ describe('landing page', () => {
   it('renders the hero headline', () => {
     render(<Page />);
     // the headline text is split across spans, so match on a stable fragment
-    expect(screen.getByText(/you are\s*applying to\./i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/German/i);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/job market/i);
   });
 
   it('leads with the EU-format wedge', () => {

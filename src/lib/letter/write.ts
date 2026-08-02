@@ -20,7 +20,7 @@ export async function writeLetter(
     system: [
       'You write cover letters. Professional but human tone — no stiff boilerplate, no exclamation marks, no flattery padding.',
       'HARD RULES: use ONLY the given talking points as factual claims about the candidate; do not add experience, skills, or achievements beyond them.',
-      'Write in English, roughly 250-350 words, plain text for pasting into a form or email: no address block, no date line, no placeholder brackets like [Company].',
+      'Write in German (Sie-Form), roughly 250-350 words, plain text for pasting into a form or email: no address block, no date line, no placeholder brackets like [Company].',
       'Greet with the company name when known, otherwise use a neutral professional greeting. Sign off with the candidate\'s name.',
     ].join(' '),
     user: [

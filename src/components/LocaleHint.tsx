@@ -5,8 +5,8 @@ export function LocaleHint({ field }: { field: LocaleField }) {
   const flags = LOCALE_FIELD_FLAGS[field];
   return (
     <span
-      aria-label="Expected by locale conventions"
-      title="Conventionally expected in these locales"
+      aria-label="Expected on a German Lebenslauf"
+      title="Expected on a German Lebenslauf"
       className="ml-2 text-sm"
     >
       {flags.join('')}

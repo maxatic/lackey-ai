@@ -21,7 +21,7 @@ vi.mock('@/lib/db/cv-documents', () => ({ upsertCvDocument: (...a: any[]) => moc
 vi.mock('@/lib/cv/compile', () => ({ compilePdf: (...a: any[]) => mocks.compilePdf(...a) }));
 vi.mock('@/lib/cv/render', () => ({ renderCv: (...a: any[]) => mocks.renderCv(...a) }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
-vi.mock('@clerk/nextjs/server', () => ({ auth: async () => ({ userId: 'user_1' }) }));
+vi.mock('@/lib/auth/local-user', () => ({ getUserId: () => 'user_1', LOCAL_USER_NAME: 'Maxat Issaliyev' }));
 vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: async () => ({
     storage: { from: () => ({ upload: mocks.upload, createSignedUrl: mocks.createSignedUrl }) },
@@ -61,12 +61,12 @@ describe('tailor actions', () => {
     mocks.upsertCvDocument.mockResolvedValue({});
     mocks.createSignedUrl.mockResolvedValue({ data: { signedUrl: 'https://signed' }, error: null });
     const fd = new FormData();
-    fd.set('job_id', 'j1'); fd.set('track_id', 't1'); fd.set('locale', 'uk');
+    fd.set('job_id', 'j1'); fd.set('track_id', 't1'); fd.set('locale', 'de');
     fd.set('overrides', JSON.stringify({ entry_exclude: ['e9'] }));
     const { url } = await generateNodeCvAction(fd);
     expect(url).toBe('https://signed');
     expect(mocks.upsertNodeCv).toHaveBeenCalledWith(expect.objectContaining({ job_id: 'j1', track_id: 't1' }));
-    expect(mocks.upload).toHaveBeenCalledWith('user_1/t1-uk-j1.pdf', expect.anything(), expect.anything());
+    expect(mocks.upload).toHaveBeenCalledWith('user_1/t1-de-j1.pdf', expect.anything(), expect.anything());
     expect(mocks.upsertCvDocument).toHaveBeenCalledWith(expect.objectContaining({ job_id: 'j1' }));
   });
 
@@ -78,7 +78,7 @@ describe('tailor actions', () => {
     mocks.upsertCvDocument.mockResolvedValue({});
     mocks.createSignedUrl.mockResolvedValue({ data: { signedUrl: 'https://signed' }, error: null });
     const fd = new FormData();
-    fd.set('job_id', 'j1'); fd.set('track_id', 't1'); fd.set('locale', 'uk'); fd.set('overrides', '{}');
+    fd.set('job_id', 'j1'); fd.set('track_id', 't1'); fd.set('locale', 'de'); fd.set('overrides', '{}');
     return fd;
   };
 

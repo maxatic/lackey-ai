@@ -101,7 +101,7 @@ export async function suggestCvDiff(jd: ParsedJd, snapshot: TrackSnapshot): Prom
       'You tailor a CV to a job description by suggesting a diff against the existing CV data.',
       'HARD RULES: never invent facts, experience, skills, or achievements. Bullet rewrites may only rephrase the referenced bullet\'s existing facts to echo the job description\'s language and emphasis.',
       'Reorder entries and skills by relevance to the JD. Exclude items only when clearly irrelevant.',
-      'Every suggestion must include a short reason tied to the JD.',
+      'Every suggestion must include a short reason tied to the JD. Write all reword suggestions in German for the German job market.',
     ].join(' '),
     user: `JOB DESCRIPTION (parsed):\n${JSON.stringify(jd, null, 2)}\n\nCURRENT CV DATA (with ids):\n${serializeSnapshot(snapshot)}`,
     toolName: 'record_cv_suggestions',

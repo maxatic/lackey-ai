@@ -1,11 +1,10 @@
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ensureUser } from '@/lib/auth/ensure-user';
 
 async function requireUserId(): Promise<string> {
   await ensureUser();
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
   return userId;
 }
 
@@ -44,10 +43,12 @@ async function getLinkIds(
   fkCol: 'entry_id' | 'skill_id',
   trackId: string,
 ): Promise<string[]> {
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from(table)
     .select(`${fkCol}, sort_order`)
+    .eq('user_id', userId)
     .eq('track_id', trackId)
     .order('sort_order');
   if (error) throw error;

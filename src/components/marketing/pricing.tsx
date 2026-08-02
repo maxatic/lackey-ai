@@ -54,10 +54,10 @@ export function Pricing() {
               ))}
             </ul>
             <Link
-              href="/sign-up"
+              href="/dashboard"
               className="group mt-7 inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3.5 text-base font-semibold text-white transition-all duration-200 hover:bg-[var(--accent-ink)] active:translate-y-px"
             >
-              Start free
+              Open workspace
               <ArrowRight
                 weight="bold"
                 className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"

@@ -39,3 +39,17 @@ export const DETAIL_FIELDS: Record<EntryKind, { key: string; label: string }[]> 
 };
 
 export const ENTRY_KINDS = Object.keys(KIND_LABELS) as EntryKind[];
+
+export const KIND_DESCRIPTIONS: Record<EntryKind, string> = {
+  experience: 'Roles and positions — the core of most CVs.',
+  education: 'Degrees, schools and academic background.',
+  project: 'Side projects, open source and portfolio work.',
+  certification: 'Professional certs, licenses and credentials.',
+  award: 'Honours, prizes and recognitions.',
+  publication: 'Papers, articles and written work.',
+  volunteering: 'Community work and unpaid roles.',
+};
+
+export function isEntryKind(value: string): value is EntryKind {
+  return ENTRY_KINDS.includes(value as EntryKind);
+}

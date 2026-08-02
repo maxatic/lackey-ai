@@ -1,21 +1,21 @@
 'use server';
 import { revalidatePath } from 'next/cache';
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getCvData } from '@/lib/cv/data';
 import { renderCv } from '@/lib/cv/render';
 import { compilePdf } from '@/lib/cv/compile';
 import { upsertCvDocument } from '@/lib/db/cv-documents';
-import { CV_LOCALES, type CvLocale } from '@/lib/cv/types';
+import { ACTIVE_CV_LOCALES, DEFAULT_CV_LOCALE } from '@/lib/market';
+import type { CvLocale } from '@/lib/cv/types';
 
 export async function generateCv(formData: FormData): Promise<{ url: string }> {
   const trackId = String(formData.get('track_id') ?? '');
-  const locale = String(formData.get('locale') ?? '') as CvLocale;
+  const locale = String(formData.get('locale') ?? DEFAULT_CV_LOCALE) as CvLocale;
   if (!trackId) throw new Error('Missing track');
-  if (!CV_LOCALES.includes(locale)) throw new Error('Invalid locale');
+  if (!ACTIVE_CV_LOCALES.includes(locale)) throw new Error('Invalid locale');
 
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
 
   const data = await getCvData(trackId, locale);
   const pdf = await compilePdf(renderCv(data));
@@ -39,8 +39,10 @@ export async function generateCv(formData: FormData): Promise<{ url: string }> {
 }
 
 export async function getSignedDownloadUrl(storagePath: string): Promise<{ url: string }> {
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
+  if (!storagePath.startsWith(`${userId}/`)) {
+    throw new Error('Not found');
+  }
 
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.storage

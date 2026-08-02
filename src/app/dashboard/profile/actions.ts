@@ -2,7 +2,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { upsertProfile, type ProfileInput, type ProfileLink } from '@/lib/db/profile';
 
@@ -40,8 +40,7 @@ export async function uploadPhoto(formData: FormData): Promise<void> {
   const file = formData.get('photo');
   if (!(file instanceof File) || file.size === 0) return;
 
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
 
   const supabase = await createServerSupabaseClient();
   const path = `${userId}/avatar`; // stable path → overwrite on re-upload

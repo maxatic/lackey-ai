@@ -62,7 +62,7 @@ vi.mock('@/lib/supabase/server', () => ({
   createServerSupabaseClient: async () => ({ from: (n: string) => table(n) }),
 }));
 vi.mock('@/lib/auth/ensure-user', () => ({ ensureUser: async () => {} }));
-vi.mock('@clerk/nextjs/server', () => ({ auth: async () => ({ userId: USER }) }));
+vi.mock('@/lib/auth/local-user', () => ({ getUserId: () => USER, LOCAL_USER_NAME: 'Maxat Issaliyev' }));
 
 import {
   setTrackEntries,

@@ -1,5 +1,5 @@
 // src/lib/db/bullets.ts
-import { auth } from '@clerk/nextjs/server';
+import { getUserId } from '@/lib/auth/local-user';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ensureUser } from '@/lib/auth/ensure-user';
 import type { Database } from '@/lib/db/database.types';
@@ -12,10 +12,12 @@ export type BulletInput = Omit<
 >;
 
 export async function listBullets(entryId: string): Promise<Bullet[]> {
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('bullets')
     .select('*')
+    .eq('user_id', userId)
     .eq('entry_id', entryId)
     .order('sort_order', { ascending: true });
   if (error) throw error;
@@ -24,8 +26,7 @@ export async function listBullets(entryId: string): Promise<Bullet[]> {
 
 export async function createBullet(input: BulletInput): Promise<Bullet> {
   await ensureUser();
-  const { userId } = await auth();
-  if (!userId) throw new Error('Not authenticated');
+  const userId = getUserId();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('bullets')
