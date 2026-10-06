@@ -1,7 +1,8 @@
 # cv-compile-service
 
 Tiny Node HTTP service that compiles LaTeX to PDF via Tectonic.
-Runs on Fly.io (scale-to-zero). Called by the Next.js app's `/api/compile` route handler.
+Includes a Fly.io configuration with scale-to-zero. Called from the Next.js app's
+server actions through `src/lib/cv/compile.ts`.
 
 ## Endpoints
 
@@ -28,10 +29,10 @@ After deploy, copy the service URL (e.g. `https://cv-compile-service.fly.dev`) a
 
 ```bash
 # Build
-docker build -t cv-svc compile-service
+docker build --platform linux/amd64 -t cv-svc compile-service
 
 # Run
-docker run -e COMPILE_SERVICE_SECRET=test -p 8080:8080 cv-svc
+docker run --platform linux/amd64 --rm -e COMPILE_SERVICE_SECRET=test -p 8080:8080 cv-svc
 
 # Smoke test (in another terminal)
 COMPILE_SERVICE_SECRET=test node compile-service/smoke.mjs
@@ -39,6 +40,8 @@ COMPILE_SERVICE_SECRET=test node compile-service/smoke.mjs
 
 ## Notes
 
+- The Dockerfile downloads a Linux x86-64 Tectonic binary; use the explicit
+  `linux/amd64` platform when building or running on Apple Silicon.
 - Tectonic 0.16.9 binary is baked into the image. The warm-compile step during `docker build`
   pulls and caches the TeX bundle, so cold starts on Fly are ~2-3s rather than 30s+.
 - `auto_stop_machines = "stop"` + `min_machines_running = 0` → scale-to-zero when idle.
